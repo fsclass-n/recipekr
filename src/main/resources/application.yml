@@ -1,9 +1,6 @@
 spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/recipekr?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-    username: root
-    password: your_password_here
-    driver-class-name: com.mysql.cj.jdbc.Driver
+  profiles:
+    active: tidb # 초기 개발용 TiDB 클라우드 우선 적용. 추후 rds로 변경
 
   thymeleaf:
     cache: false

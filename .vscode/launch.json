@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-RecipekrApplication",
+            "request": "launch",
+            "mainClass": "com.recipekr.RecipekrApplication",
+            "projectName": "recipekr",
+            "env": {
+                "TIDB_URL": "jdbc:mysql://gateway01.ap-northeast-1.prod.aws.tidbcloud.com:4000/recipekr?useSSL=true&serverTimezone=Asia/Seoul",
+                "TIDB_USERNAME": "2tKL7PvWWp5JakF.root",
+                "TIDB_PASSWORD": "inZWb4Ps6xN5siFn"
+            }
+        }
+    ]
+}
