@@ -98,16 +98,11 @@
                     <strong style="color: var(--color-secondary)">오늘의 마트 할인 재료</strong>까지 반영한 스마트한 추천!
                 </p>
 
-                <!-- CTA 버튼 -->
+                <!-- CTA 버튼 (로컬 테스트: 항상 추천 페이지로 이동) -->
                 <div class="hero-cta animate-fade-in-up delay-300">
-                    <a th:href="${#authorization.expression('isAuthenticated()') ? '/recipe/recommend' : '/auth/signup'}"
+                    <a th:href="@{/recipe/recommend}"
                        class="btn btn-gradient-lg me-3">
                         <i class="bi bi-stars me-2"></i>레시피 추천받기
-                    </a>
-                    <a th:href="@{/auth/login}"
-                       th:if="${#authorization.expression('isAnonymous()')}"
-                       class="btn btn-outline-light btn-lg px-4">
-                        로그인 <i class="bi bi-arrow-right ms-1"></i>
                     </a>
                 </div>
 

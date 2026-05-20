@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>냉장고 파먹기 AI - 레시피 추천</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background: #0f0f1a; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; }
+        .card { background: #1e1e2e; border: 1px solid #2d2d44; border-radius: 16px; }
+        .form-control, .form-select {
+            background: #2a2a3e; border: 1px solid #3d3d5c; color: #e2e8f0;
+            border-radius: 10px;
+        }
+        .form-control:focus, .form-select:focus {
+            background: #2a2a3e; color: #e2e8f0; border-color: #7c3aed;
+            box-shadow: 0 0 0 0.2rem rgba(124,58,237,.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            border: none; border-radius: 10px; padding: .75rem 2rem; font-weight: 600;
+        }
+        .btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+        .badge-health {
+            background: rgba(124,58,237,.2); color: #a78bfa;
+            border: 1px solid #7c3aed; border-radius: 20px;
+            padding: 4px 12px; font-size: .85rem;
+        }
+        h1 { background: linear-gradient(135deg,#a78bfa,#60a5fa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    </style>
+</head>
+<body class="d-flex align-items-center" style="min-height:100vh;">
+<div class="container py-5" style="max-width:680px;">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold fs-2">🍳 냉장고 파먹기 AI</h1>
+        <p class="text-secondary">재료를 입력하면 건강 상태에 맞는 레시피를 추천해 드립니다.</p>
+    </div>
+    <div class="card p-4 shadow">
+        <form th:action="@{/recipe/recommend}" method="post">
+            <!-- 재료 입력 -->
+            <div class="mb-3">
+                <label for="ingredients" class="form-label fw-semibold">
+                    <i class="bi bi-basket2 text-warning me-1"></i>냉장고 재료
+                </label>
+                <input type="text" id="ingredients" name="ingredients" class="form-control"
+                       placeholder="예: 계란, 양파, 감자, 두부" required>
+                <div class="form-text text-secondary">쉼표(,)로 구분하여 입력해 주세요.</div>
+            </div>
+            <!-- 건강 유형 선택 -->
+            <div class="mb-3">
+                <label for="health_type" class="form-label fw-semibold">
+                    <i class="bi bi-heart-pulse text-danger me-1"></i>건강 유형
+                </label>
+                <select id="health_type" name="health_type" class="form-select">
+                    <option value="일반">🍽 일반 (제한 없음)</option>
+                    <option value="다이어트">🥗 다이어트</option>
+                    <option value="당뇨">🩺 당뇨 관리</option>
+                    <option value="저염식">🧂 저염식</option>
+                </select>
+            </div>
+            <!-- 추천 개수 -->
+            <div class="mb-4">
+                <label for="top_n" class="form-label fw-semibold">
+                    <i class="bi bi-list-ol me-1"></i>추천 레시피 수
+                </label>
+                <select id="top_n" name="top_n" class="form-select">
+                    <option value="3">3개</option>
+                    <option value="5">5개</option>
+                </select>
+            </div>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-stars me-1"></i>AI 레시피 추천받기
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

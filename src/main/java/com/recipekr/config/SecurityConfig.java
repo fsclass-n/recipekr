@@ -62,6 +62,7 @@ public class SecurityConfig {
                     "/auth/login",
                     "/auth/signup",
                     "/auth/logout",
+                    "/recipe/**",   // ✅ 로컬 테스트용 - 추천 기능 비인증 허용 (운영 시 제거)
                     "/css/**",
                     "/js/**",
                     "/images/**",
