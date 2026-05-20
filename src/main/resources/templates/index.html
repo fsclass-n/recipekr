@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="냉장고 파먹기 - AI가 냉장고 속 재료로 오늘의 레시피를 추천해 드립니다">
+    <title>홈 | 냉장고 파먹기</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Global CSS -->
+    <link rel="stylesheet" th:href="@{/css/global.css}">
+</head>
+<body>
+
+<!-- ─── NAVBAR ─── -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top" id="mainNavbar">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
+            <span class="brand-icon">🍽️</span>
+            <span class="brand-text">냉장고 파먹기</span>
+        </a>
+        <button class="navbar-toggler border-0" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/}">
+                        <i class="bi bi-house-door me-1"></i>홈
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" th:href="@{/recipe/recommend}">
+                        <i class="bi bi-stars me-1"></i>레시피 추천
+                    </a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center gap-2">
+                <div sec:authorize="isAnonymous()" class="d-flex gap-2">
+                    <a th:href="@{/auth/login}" class="btn btn-outline-light btn-sm px-3">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>로그인
+                    </a>
+                    <a th:href="@{/auth/signup}" class="btn btn-accent btn-sm px-3">
+                        <i class="bi bi-person-plus me-1"></i>회원가입
+                    </a>
+                </div>
+                <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-3">
+                    <span class="text-white-50 d-none d-md-inline">
+                        <i class="bi bi-person-circle me-1"></i>
+                        <span th:text="${user != null ? user.nickname : ''} + '님'"></span>
+                    </span>
+                    <a th:href="@{/auth/logout}" class="btn btn-outline-light btn-sm px-3">
+                        <i class="bi bi-box-arrow-right me-1"></i>로그아웃
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- ─── HERO SECTION ─── -->
+<section class="hero-section">
+    <!-- 배경 장식 -->
+    <div class="hero-bg" aria-hidden="true">
+        <div class="hero-blob hero-blob-1"></div>
+        <div class="hero-blob hero-blob-2"></div>
+        <div class="hero-grid"></div>
+    </div>
+
+    <div class="container position-relative">
+        <div class="row align-items-center min-vh-hero">
+            <div class="col-lg-7 col-xl-6">
+                <!-- 배지 -->
+                <div class="hero-badge animate-fade-in-up">
+                    <span class="badge-brand">
+                        <i class="bi bi-stars me-1"></i> AI 기반 레시피 추천
+                    </span>
+                </div>
+
+                <!-- 헤드라인 -->
+                <h1 class="hero-title animate-fade-in-up delay-100">
+                    냉장고 속 재료로<br>
+                    <span class="brand-gradient-text">오늘 뭐 먹지?</span>
+                </h1>
+
+                <!-- 서브카피 -->
+                <p class="hero-subtitle animate-fade-in-up delay-200">
+                    남은 식재료를 입력하면 AI가 최적의 레시피를 추천해 드려요.<br>
+                    <strong style="color: var(--color-secondary)">오늘의 마트 할인 재료</strong>까지 반영한 스마트한 추천!
+                </p>
+
+                <!-- CTA 버튼 -->
+                <div class="hero-cta animate-fade-in-up delay-300">
+                    <a th:href="${#authorization.expression('isAuthenticated()') ? '/recipe/recommend' : '/auth/signup'}"
+                       class="btn btn-gradient-lg me-3">
+                        <i class="bi bi-stars me-2"></i>레시피 추천받기
+                    </a>
+                    <a th:href="@{/auth/login}"
+                       th:if="${#authorization.expression('isAnonymous()')}"
+                       class="btn btn-outline-light btn-lg px-4">
+                        로그인 <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                <!-- 통계 -->
+                <div class="hero-stats animate-fade-in-up delay-300">
+                    <div class="stat-item">
+                        <span class="stat-num">10K+</span>
+                        <span class="stat-label">레시피</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-num">3곳</span>
+                        <span class="stat-label">마트 연동</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-num">매일</span>
+                        <span class="stat-label">업데이트</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero 이미지/이모지 카드 -->
+            <div class="col-lg-5 col-xl-6 d-none d-lg-flex justify-content-center">
+                <div class="hero-visual animate-fade-in-up delay-200">
+                    <div class="hero-emoji-main animate-float">🥘</div>
+                    <div class="hero-card hero-card-1">
+                        <span class="hero-card-icon">🥦</span>
+                        <div>
+                            <div class="hero-card-title">브로콜리</div>
+                            <div class="hero-card-sub">30% 할인 중</div>
+                        </div>
+                    </div>
+                    <div class="hero-card hero-card-2">
+                        <span class="hero-card-icon">✨</span>
+                        <div>
+                            <div class="hero-card-title">AI 추천 완료</div>
+                            <div class="hero-card-sub">레시피 12개</div>
+                        </div>
+                    </div>
+                    <div class="hero-card hero-card-3">
+                        <span class="hero-card-icon">🍳</span>
+                        <div>
+                            <div class="hero-card-title">오늘의 추천</div>
+                            <div class="hero-card-sub">닭가슴살 볶음밥</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── FEATURES SECTION ─── -->
+<section class="features-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge-brand mb-3 d-inline-block">서비스 특징</span>
+            <h2 class="section-title">왜 냉장고 파먹기인가요?</h2>
+            <p class="section-subtitle">AI와 실시간 데이터로 매일 새로운 레시피를 경험하세요</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card card-dark p-4 h-100">
+                    <div class="feature-card-icon">🤖</div>
+                    <h3 class="feature-card-title">AI 맞춤 추천</h3>
+                    <p class="feature-card-desc">TF-IDF와 코사인 유사도 알고리즘으로 보유 재료에 가장 적합한 레시피를 정밀하게 추천합니다.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card card-dark p-4 h-100">
+                    <div class="feature-card-icon">🛒</div>
+                    <h3 class="feature-card-title">실시간 할인 반영</h3>
+                    <p class="feature-card-desc">매일 새벽, Playwright 크롤러가 이마트·홈플러스 할인 정보를 수집하여 레시피 추천에 반영합니다.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card card-dark p-4 h-100">
+                    <div class="feature-card-icon">💪</div>
+                    <h3 class="feature-card-title">건강 목표별 필터</h3>
+                    <p class="feature-card-desc">다이어트·근육증가·균형식 등 건강 유형을 선택하면 칼로리와 영양소를 고려한 레시피만 보여드립니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer class="footer mt-auto py-4">
+    <div class="container text-center">
+        <p class="mb-1 text-muted">
+            <span class="brand-gradient-text fw-semibold">냉장고 파먹기</span>
+            &nbsp;—&nbsp; AI가 추천하는 오늘의 레시피
+        </p>
+        <p class="mb-0 text-muted small">&copy; 2024 RecipeKR. Built with Spring Boot 3 &amp; Python AI</p>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+    /* ── 히어로 섹션 ── */
+    .hero-section {
+        position: relative;
+        overflow: hidden;
+        padding: 5rem 0 4rem;
+    }
+
+    .min-vh-hero { min-height: calc(100vh - 4rem); }
+
+    .hero-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+
+    .hero-blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+    }
+
+    .hero-blob-1 {
+        width: 700px; height: 700px;
+        background: radial-gradient(circle, rgba(255,107,53,0.12), transparent 70%);
+        top: -200px; left: -200px;
+    }
+
+    .hero-blob-2 {
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(46,196,182,0.1), transparent 70%);
+        bottom: -200px; right: -100px;
+    }
+
+    .hero-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        background-size: 60px 60px;
+    }
+
+    .hero-badge { margin-bottom: 1.5rem; }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 900;
+        line-height: 1.15;
+        color: #fff;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.03em;
+    }
+
+    .hero-subtitle {
+        font-size: 1.125rem;
+        color: rgba(255,255,255,0.6);
+        line-height: 1.7;
+        margin-bottom: 2.5rem;
+        max-width: 520px;
+    }
+
+    .hero-cta { margin-bottom: 3rem; display: flex; flex-wrap: wrap; gap: 1rem; }
+
+    .hero-stats {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .stat-item { display: flex; flex-direction: column; }
+    .stat-num { font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1.1; }
+    .stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.45); }
+    .stat-divider { width: 1px; height: 2rem; background: rgba(255,255,255,0.15); }
+
+    /* ── 히어로 비주얼 ── */
+    .hero-visual {
+        position: relative;
+        width: 420px;
+        height: 420px;
+    }
+
+    .hero-emoji-main {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 8rem;
+        line-height: 1;
+        filter: drop-shadow(0 0 40px rgba(255,107,53,0.4));
+    }
+
+    .hero-card {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(30, 41, 59, 0.85);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 1rem;
+        padding: 0.75rem 1.25rem;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .hero-card-icon { font-size: 1.5rem; }
+    .hero-card-title { font-size: 0.8rem; font-weight: 700; color: #fff; }
+    .hero-card-sub { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+
+    .hero-card-1 { top: 10%; left: -5%; animation: floatCard 4s ease-in-out infinite; }
+    .hero-card-2 { top: 5%; right: 0%; animation: floatCard 5s ease-in-out infinite 1s; }
+    .hero-card-3 { bottom: 10%; left: 5%; animation: floatCard 4.5s ease-in-out infinite 0.5s; }
+
+    @keyframes floatCard {
+        0%, 100% { transform: translateY(0); }
+        50%       { transform: translateY(-8px); }
+    }
+
+    /* ── 피처 섹션 ── */
+    .section-title {
+        font-size: clamp(1.75rem, 3vw, 2.25rem);
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+        color: rgba(255,255,255,0.5);
+        font-size: 1rem;
+    }
+
+    .feature-card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .feature-card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 0.5rem;
+    }
+    .feature-card-desc {
+        color: rgba(255,255,255,0.55);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* 네비게이션 스크롤 효과 */
+    #mainNavbar.scrolled {
+        background: rgba(15, 23, 42, 0.98) !important;
+    }
+</style>
+
+<script>
+    window.addEventListener('scroll', () => {
+        document.getElementById('mainNavbar').classList.toggle('scrolled', window.scrollY > 30);
+    });
+</script>
+
+</body>
+</html>
