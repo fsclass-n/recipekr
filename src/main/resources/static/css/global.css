@@ -263,6 +263,23 @@ main {
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
 }
 
+/* select 드롭다운 다크 스타일 (브라우저 기본 흰 배경 덮어쓰기) */
+select.form-control-dark {
+    background-color: #1e293b !important;
+    color: var(--color-white) !important;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff80' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 1rem center !important;
+    padding-right: 2.5rem !important;
+}
+
+select.form-control-dark option {
+    background-color: #1e293b;
+    color: var(--color-white);
+}
+
 .form-label-dark {
     color: rgba(255, 255, 255, 0.8);
     font-weight: 600;
@@ -340,6 +357,14 @@ main {
 .footer {
     background: rgba(15, 23, 42, 0.8);
     border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.footer p, .footer .text-muted {
+    color: rgba(255, 255, 255, 0.55) !important; /* 기존 Bootstrap muted(회색)보다 밝게 */
+}
+
+.footer .small {
+    color: rgba(255, 255, 255, 0.38) !important;
 }
 
 /* ── 11. 배경 장식 (Decorative blobs) ── */

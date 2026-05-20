@@ -6,17 +6,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="냉장고 파먹기 - AI가 냉장고 속 재료로 오늘의 레시피를 추천해 드립니다">
     <title>홈 | 냉장고 파먹기</title>
-
-    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <!-- Global CSS -->
     <link rel="stylesheet" th:href="@{/css/global.css}">
+
+    <style>
+    /* ══════════════════════════════════════
+       풀페이지 레이아웃
+    ══════════════════════════════════════ */
+    :root { --nav-h: 4rem; }
+
+    html { 
+        scroll-behavior: smooth; 
+        scroll-snap-type: y mandatory;
+    }
+
+    /* 각 섹션이 뷰포트 전체를 차지 */
+    .fp-section {
+        height: 100vh;
+        scroll-snap-align: start;
+        display: flex;
+        align-items: center;      /* 수직 중앙 정렬 */
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* ── 히어로 배경 장식 ── */
+    .hero-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+    .hero-blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+    }
+    .hero-blob-1 {
+        width: 700px; height: 700px;
+        background: radial-gradient(circle, rgba(255,107,53,0.12), transparent 70%);
+        top: -200px; left: -200px;
+    }
+    .hero-blob-2 {
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(46,196,182,0.1), transparent 70%);
+        bottom: -200px; right: -100px;
+    }
+    .hero-grid {
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        background-size: 60px 60px;
+    }
+
+    /* ── 히어로 텍스트 ── */
+    .hero-badge  { margin-bottom: 1.5rem; }
+    .hero-title  {
+        font-size: clamp(2.2rem, 5vw, 3.8rem);
+        font-weight: 900; line-height: 1.15;
+        color: #fff; margin-bottom: 1.4rem;
+        letter-spacing: -0.03em;
+    }
+    .hero-subtitle {
+        font-size: 1.1rem; color: rgba(255,255,255,0.6);
+        line-height: 1.7; margin-bottom: 2.2rem; max-width: 520px;
+    }
+    .hero-cta    { margin-bottom: 2.5rem; display: flex; flex-wrap: wrap; gap: 1rem; }
+    .hero-stats  { display: flex; align-items: center; gap: 2rem; }
+    .stat-item   { display: flex; flex-direction: column; }
+    .stat-num    { font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1.1; }
+    .stat-label  { font-size: 0.8rem; color: rgba(255,255,255,0.45); }
+    .stat-divider{ width: 1px; height: 2rem; background: rgba(255,255,255,0.15); }
+
+    /* ── 히어로 비주얼 ── */
+    .hero-visual { position: relative; width: 420px; height: 420px; }
+    .hero-emoji-main {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 8rem; line-height: 1;
+        filter: drop-shadow(0 0 40px rgba(255,107,53,0.4));
+    }
+    .hero-card {
+        position: absolute;
+        display: flex; align-items: center; gap: 0.75rem;
+        background: rgba(30,41,59,0.85);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 1rem; padding: 0.75rem 1.25rem;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .hero-card-icon  { font-size: 1.5rem; }
+    .hero-card-title { font-size: 0.8rem; font-weight: 700; color: #fff; }
+    .hero-card-sub   { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+    .hero-card-1 { top:10%; left:-5%;  animation: floatCard 4s   ease-in-out infinite; }
+    .hero-card-2 { top:5%;  right:0%;  animation: floatCard 5s   ease-in-out infinite 1s; }
+    .hero-card-3 { bottom:10%; left:5%; animation: floatCard 4.5s ease-in-out infinite .5s; }
+    @keyframes floatCard { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+    /* ── 스크롤 힌트 ── */
+    .scroll-hint {
+        position: absolute; bottom: 1.5rem; left: 50%;
+        transform: translateX(-50%);
+        display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+        color: rgba(255,255,255,0.3); font-size: 0.75rem;
+        animation: bounce 2s ease-in-out infinite;
+        cursor: pointer; text-decoration: none;
+    }
+    .scroll-hint:hover { color: rgba(255,255,255,0.6); }
+    @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+    /* ── 피처 섹션 배경 ── */
+    #features {
+        background: linear-gradient(180deg,
+            rgba(46,196,182,0.04) 0%,
+            transparent 50%,
+            rgba(255,107,53,0.04) 100%);
+    }
+
+    .section-title {
+        font-size: clamp(1.75rem, 3vw, 2.25rem);
+        font-weight: 800; color: #fff;
+        margin-bottom: 0.75rem; letter-spacing: -0.02em;
+    }
+    .section-subtitle { color: rgba(255,255,255,0.5); font-size: 1rem; }
+
+    .feature-card-icon  { font-size: 2.5rem; margin-bottom: 1rem; }
+    .feature-card-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+    .feature-card-desc  { color: rgba(255,255,255,0.55); font-size: 0.9rem; line-height: 1.6; margin: 0; }
+
+    /* hover 시 살짝 위로 float */
+    .feature-card { transition: transform .25s, box-shadow .25s; }
+    .feature-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 40px rgba(46,196,182,0.15);
+    }
+
+    /* ── 네비 스크롤 효과 ── */
+    #mainNavbar.scrolled { background: rgba(15,23,42,0.98) !important; }
+    
+    /* footer 스냅 속성 */
+    .footer {
+        scroll-snap-align: end;
+    }
+    </style>
 </head>
 <body>
 
@@ -39,8 +171,15 @@
                     </a>
                 </li>
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link" th:href="@{/recipe/recommend}">
+                    <!-- 레시피 추천도 메인 페이지 내의 기능으로 설명되는 앵커로 처리하거나, 별도 페이지로 이동. 
+                         요청하신 "부드러운 이동"을 위해 앵커 동작 추가 -->
+                    <a class="nav-link" href="/recipe/recommend">
                         <i class="bi bi-stars me-1"></i>레시피 추천
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#features" id="nav-features">
+                        <i class="bi bi-grid-3x3-gap me-1"></i>서비스 특징
                     </a>
                 </li>
             </ul>
@@ -67,8 +206,10 @@
     </div>
 </nav>
 
-<!-- ─── HERO SECTION ─── -->
-<section class="hero-section">
+<!-- ══════════════════════════════════════
+     SECTION 1: HERO (풀페이지 #1)
+══════════════════════════════════════ -->
+<section id="hero" class="fp-section">
     <!-- 배경 장식 -->
     <div class="hero-bg" aria-hidden="true">
         <div class="hero-blob hero-blob-1"></div>
@@ -76,8 +217,8 @@
         <div class="hero-grid"></div>
     </div>
 
-    <div class="container position-relative">
-        <div class="row align-items-center min-vh-hero">
+    <div class="container position-relative w-100">
+        <div class="row align-items-center">
             <div class="col-lg-7 col-xl-6">
                 <!-- 배지 -->
                 <div class="hero-badge animate-fade-in-up">
@@ -85,27 +226,22 @@
                         <i class="bi bi-stars me-1"></i> AI 기반 레시피 추천
                     </span>
                 </div>
-
                 <!-- 헤드라인 -->
                 <h1 class="hero-title animate-fade-in-up delay-100">
                     냉장고 속 재료로<br>
                     <span class="brand-gradient-text">오늘 뭐 먹지?</span>
                 </h1>
-
                 <!-- 서브카피 -->
                 <p class="hero-subtitle animate-fade-in-up delay-200">
                     남은 식재료를 입력하면 AI가 최적의 레시피를 추천해 드려요.<br>
                     <strong style="color: var(--color-secondary)">오늘의 마트 할인 재료</strong>까지 반영한 스마트한 추천!
                 </p>
-
-                <!-- CTA 버튼 (로컬 테스트: 항상 추천 페이지로 이동) -->
+                <!-- CTA -->
                 <div class="hero-cta animate-fade-in-up delay-300">
-                    <a th:href="@{/recipe/recommend}"
-                       class="btn btn-gradient-lg me-3">
+                    <a th:href="@{/recipe/recommend}" class="btn btn-gradient-lg">
                         <i class="bi bi-stars me-2"></i>레시피 추천받기
                     </a>
                 </div>
-
                 <!-- 통계 -->
                 <div class="hero-stats animate-fade-in-up delay-300">
                     <div class="stat-item">
@@ -125,7 +261,7 @@
                 </div>
             </div>
 
-            <!-- Hero 이미지/이모지 카드 -->
+            <!-- 비주얼 카드 -->
             <div class="col-lg-5 col-xl-6 d-none d-lg-flex justify-content-center">
                 <div class="hero-visual animate-fade-in-up delay-200">
                     <div class="hero-emoji-main animate-float">🥘</div>
@@ -154,18 +290,26 @@
             </div>
         </div>
     </div>
+
+    <!-- 스크롤 힌트 -->
+    <a href="#features" class="scroll-hint" aria-label="서비스 특징으로 이동">
+        <span>서비스 특징 보기</span>
+        <i class="bi bi-chevron-double-down fs-5"></i>
+    </a>
 </section>
 
-<!-- ─── FEATURES SECTION ─── -->
-<section class="features-section py-5">
+<!-- ══════════════════════════════════════
+     SECTION 2: FEATURES (풀페이지 #2)
+══════════════════════════════════════ -->
+<section id="features" class="fp-section">
     <div class="container">
-        <div class="text-center mb-5">
+        <div class="text-center mb-5 animate-fade-in-up">
             <span class="badge-brand mb-3 d-inline-block">서비스 특징</span>
             <h2 class="section-title">왜 냉장고 파먹기인가요?</h2>
             <p class="section-subtitle">AI와 실시간 데이터로 매일 새로운 레시피를 경험하세요</p>
         </div>
 
-        <div class="row g-4">
+        <div class="row g-4 animate-fade-in-up delay-100">
             <div class="col-md-4">
                 <div class="feature-card card-dark p-4 h-100">
                     <div class="feature-card-icon">🤖</div>
@@ -184,179 +328,90 @@
                 <div class="feature-card card-dark p-4 h-100">
                     <div class="feature-card-icon">💪</div>
                     <h3 class="feature-card-title">건강 목표별 필터</h3>
-                    <p class="feature-card-desc">다이어트·근육증가·균형식 등 건강 유형을 선택하면 칼로리와 영양소를 고려한 레시피만 보여드립니다.</p>
+                    <p class="feature-card-desc">다이어트·당뇨·저염식 등 건강 유형을 선택하면 칼로리와 영양소를 고려한 레시피만 보여드립니다.</p>
                 </div>
             </div>
+        </div>
+
+        <!-- 하단 CTA -->
+        <div class="text-center mt-5 animate-fade-in-up delay-200">
+            <a th:href="@{/recipe/recommend}" class="btn btn-gradient-lg">
+                <i class="bi bi-stars me-2"></i>지금 바로 시작하기
+            </a>
         </div>
     </div>
 </section>
 
 <!-- ─── FOOTER ─── -->
-<footer class="footer mt-auto py-4">
+<footer class="footer py-4">
     <div class="container text-center">
-        <p class="mb-1 text-muted">
+        <p class="mb-1">
             <span class="brand-gradient-text fw-semibold">냉장고 파먹기</span>
             &nbsp;—&nbsp; AI가 추천하는 오늘의 레시피
         </p>
-        <p class="mb-0 text-muted small">&copy; 2024 RecipeKR. Built with Spring Boot 3 &amp; Python AI</p>
+        <p class="mb-0 small">&copy; 2024 RecipeKR. Built with Spring Boot 3 &amp; Python AI</p>
     </div>
 </footer>
 
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<style>
-    /* ── 히어로 섹션 ── */
-    .hero-section {
-        position: relative;
-        overflow: hidden;
-        padding: 5rem 0 4rem;
-    }
-
-    .min-vh-hero { min-height: calc(100vh - 4rem); }
-
-    .hero-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-
-    .hero-blob {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(100px);
-    }
-
-    .hero-blob-1 {
-        width: 700px; height: 700px;
-        background: radial-gradient(circle, rgba(255,107,53,0.12), transparent 70%);
-        top: -200px; left: -200px;
-    }
-
-    .hero-blob-2 {
-        width: 600px; height: 600px;
-        background: radial-gradient(circle, rgba(46,196,182,0.1), transparent 70%);
-        bottom: -200px; right: -100px;
-    }
-
-    .hero-grid {
-        position: absolute;
-        inset: 0;
-        background-image:
-            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-        background-size: 60px 60px;
-    }
-
-    .hero-badge { margin-bottom: 1.5rem; }
-
-    .hero-title {
-        font-size: clamp(2.5rem, 5vw, 4rem);
-        font-weight: 900;
-        line-height: 1.15;
-        color: #fff;
-        margin-bottom: 1.5rem;
-        letter-spacing: -0.03em;
-    }
-
-    .hero-subtitle {
-        font-size: 1.125rem;
-        color: rgba(255,255,255,0.6);
-        line-height: 1.7;
-        margin-bottom: 2.5rem;
-        max-width: 520px;
-    }
-
-    .hero-cta { margin-bottom: 3rem; display: flex; flex-wrap: wrap; gap: 1rem; }
-
-    .hero-stats {
-        display: flex;
-        align-items: center;
-        gap: 2rem;
-    }
-
-    .stat-item { display: flex; flex-direction: column; }
-    .stat-num { font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1.1; }
-    .stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.45); }
-    .stat-divider { width: 1px; height: 2rem; background: rgba(255,255,255,0.15); }
-
-    /* ── 히어로 비주얼 ── */
-    .hero-visual {
-        position: relative;
-        width: 420px;
-        height: 420px;
-    }
-
-    .hero-emoji-main {
-        position: absolute;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 8rem;
-        line-height: 1;
-        filter: drop-shadow(0 0 40px rgba(255,107,53,0.4));
-    }
-
-    .hero-card {
-        position: absolute;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        background: rgba(30, 41, 59, 0.85);
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 1rem;
-        padding: 0.75rem 1.25rem;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    }
-
-    .hero-card-icon { font-size: 1.5rem; }
-    .hero-card-title { font-size: 0.8rem; font-weight: 700; color: #fff; }
-    .hero-card-sub { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
-
-    .hero-card-1 { top: 10%; left: -5%; animation: floatCard 4s ease-in-out infinite; }
-    .hero-card-2 { top: 5%; right: 0%; animation: floatCard 5s ease-in-out infinite 1s; }
-    .hero-card-3 { bottom: 10%; left: 5%; animation: floatCard 4.5s ease-in-out infinite 0.5s; }
-
-    @keyframes floatCard {
-        0%, 100% { transform: translateY(0); }
-        50%       { transform: translateY(-8px); }
-    }
-
-    /* ── 피처 섹션 ── */
-    .section-title {
-        font-size: clamp(1.75rem, 3vw, 2.25rem);
-        font-weight: 800;
-        color: #fff;
-        margin-bottom: 0.75rem;
-        letter-spacing: -0.02em;
-    }
-
-    .section-subtitle {
-        color: rgba(255,255,255,0.5);
-        font-size: 1rem;
-    }
-
-    .feature-card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
-    .feature-card-title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #fff;
-        margin-bottom: 0.5rem;
-    }
-    .feature-card-desc {
-        color: rgba(255,255,255,0.55);
-        font-size: 0.9rem;
-        line-height: 1.6;
-        margin: 0;
-    }
-
-    /* 네비게이션 스크롤 효과 */
-    #mainNavbar.scrolled {
-        background: rgba(15, 23, 42, 0.98) !important;
-    }
-</style>
-
 <script>
+    // ── 네비 스크롤 효과 ──
+    const sections = Array.from(document.querySelectorAll('.fp-section'));
+    const navH = document.getElementById('mainNavbar').offsetHeight;
+
     window.addEventListener('scroll', () => {
-        document.getElementById('mainNavbar').classList.toggle('scrolled', window.scrollY > 30);
+        const scrollY = window.scrollY;
+        document.getElementById('mainNavbar').classList.toggle('scrolled', scrollY > 30);
+    });
+
+    // ── 마우스 휠 부드러운 풀페이지 스크롤 ──
+    let isScrolling = false;
+    window.addEventListener('wheel', (e) => {
+        // 모달이나 폼 내부 스크롤 시 예외 처리
+        if (e.target.closest('.modal') || e.target.closest('form')) return;
+
+        e.preventDefault();
+        if (isScrolling) return;
+
+        let currentIdx = sections.findIndex(sec => {
+            return Math.abs(window.scrollY - sec.offsetTop) < window.innerHeight / 2;
+        });
+        if (currentIdx === -1) currentIdx = 0;
+
+        let nextIdx = currentIdx;
+        if (e.deltaY > 0 && currentIdx < sections.length - 1) {
+            nextIdx++; // 아래로 스크롤
+        } else if (e.deltaY < 0 && currentIdx > 0) {
+            nextIdx--; // 위로 스크롤
+        }
+
+        if (nextIdx !== currentIdx) {
+            isScrolling = true;
+            window.scrollTo({
+                top: sections[nextIdx].offsetTop,
+                behavior: 'smooth'
+            });
+            setTimeout(() => { isScrolling = false; }, 800); // 애니메이션 시간 동안 잠금
+        } else if (e.deltaY > 0 && currentIdx === sections.length - 1) {
+            // 마지막 섹션에서 더 내리면 푸터로
+            isScrolling = true;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            setTimeout(() => { isScrolling = false; }, 800);
+        }
+    }, { passive: false });
+
+    // ── 앵커 클릭 시 부드러운 스크롤 ──
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const target = document.querySelector(this.getAttribute('href'));
+            if (!target) return;
+            e.preventDefault();
+            window.scrollTo({
+                top: target.offsetTop,
+                behavior: 'smooth'
+            });
+        });
     });
 </script>
-
 </body>
 </html>

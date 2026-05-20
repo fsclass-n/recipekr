@@ -62,13 +62,12 @@ public class SecurityConfig {
                     "/auth/login",
                     "/auth/signup",
                     "/auth/logout",
-                    "/recipe/**",   // ✅ 로컬 테스트용 - 추천 기능 비인증 허용 (운영 시 제거)
                     "/css/**",
                     "/js/**",
                     "/images/**",
                     "/error"
                 ).permitAll()
-                // 그 외 모든 요청은 로그인 필요
+                // 그 외 모든 요청은 로그인 필요 (레시피 추천 포함)
                 .anyRequest().authenticated()
             )
 

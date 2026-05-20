@@ -8,6 +8,8 @@
     padding: 0;
     min-height: 100vh;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ── 배경 장식 ── */
@@ -81,12 +83,15 @@
     position: relative;
     z-index: 1;
     display: flex;
-    min-height: 100vh;
+    flex: 1;
+    justify-content: center; /* 가운데 정렬 */
+    align-items: stretch;
 }
 
 /* ── 왼쪽: 브랜딩 패널 ── */
 .auth-branding {
     flex: 1;
+    max-width: 560px;       /* 너무 넓어지지 않도록 제한 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -163,7 +168,8 @@
 /* ── 오른쪽: 폼 패널 ── */
 .auth-form-section {
     width: 480px;
-    min-width: 480px;
+    min-width: 360px;       /* 최소 폭만 지정 */
+    max-width: 520px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -325,7 +331,7 @@
     .auth-form-section {
         width: 100%;
         min-width: 0;
-        min-height: 100vh;
+        min-height: auto;
         border-left: none;
         padding: 3rem 1.5rem;
         align-items: center !important;

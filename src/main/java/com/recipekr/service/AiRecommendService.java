@@ -56,7 +56,11 @@ public class AiRecommendService {
             );
             pb.redirectErrorStream(false); // stderr는 별도 처리
 
-            // ③ 프로세스 실행
+            // ③ Windows 환경에서 Python stdout UTF-8 강제 설정 (한글 깨짐 방지 핵심)
+            pb.environment().put("PYTHONIOENCODING", "utf-8");
+            pb.environment().put("PYTHONUTF8", "1");
+
+            // ④ 프로세스 실행
             Process process = pb.start();
 
             // ④ stdout (JSON 결과) 읽기 - UTF-8 강제 적용으로 한글 깨짐 방지
