@@ -29,9 +29,20 @@
   - `[ ]` Python 3.11 가상환경 구성 및 패키지 설정
   - `[ ]` Scikit-learn(TF-IDF, Cosine Similarity) 활용 추천 코드 작성
   - `[ ]` 모델 직렬화(`model.pkl`) 저장 로직 구성
-- `[ ]` **5단계: RPA 자동화 크롤러 개발**
-  - `[ ]` Playwright 스크립트로 마트 할인 정보 수집 로직 작성
-  - `[ ]` 수집 결과를 DB에 저장하는 함수 구현
+- `[x]` **5단계: RPA 자동화 크롤러 개발**
+  - `[x]` DB 스키마: `discount_schema.sql` — market_discount 테이블 (UNIQUE KEY UPSERT 설계)
+  - `[x]` Python 크롤러 모듈:
+    - `python-ai/crawler/emart_crawler.py` — 이마트 Playwright 크롤러
+    - `python-ai/crawler/lottemart_crawler.py` — 롯데마트 Playwright 크롤러
+    - `python-ai/crawler/homeplus_crawler.py` — 홈플러스 Playwright 크롤러
+    - `python-ai/crawler/run_crawler.py` — 3사 통합 실행 + DB UPSERT 저장 메인 스크립트
+  - `[x]` Java 백엔드:
+    - `domain/DiscountItem.java` — 할인 식재료 도메인 엔티티
+    - `repository/DiscountItemRepository.java` — JdbcTemplate CRUD (UPSERT, 조회, 정리)
+    - `service/DiscountCrawlerService.java` — ProcessBuilder로 크롤러 실행 + AI 연동
+    - `service/CrawlerScheduler.java` — @Scheduled 매일 새벽 1시 자동 크롤링
+  - `[x]` `requirements.txt` — playwright, mysql-connector-python 추가
+  - `[x]` `RecipekrApplication.java` — @EnableScheduling 추가
 - `[ ]` **6단계: 백엔드 통합 (Spring ↔ Python 연동)**
   - `[ ]` `ProcessBuilder`를 통한 Python 스크립트 실행 및 JSON 파싱 유틸리티 개발
   - `[ ]` 냉장고 재료 기반 추천 API 엔드포인트 완성
