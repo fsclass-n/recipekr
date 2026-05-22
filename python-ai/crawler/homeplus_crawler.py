@@ -1,174 +1,165 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-냉장고 파먹기 - 홈플러스 할인 상품 크롤러
-==========================================
-대상: 홈플러스 이번주 특가/할인 상품 페이지
-방식: Playwright (Chromium headless)
-저장: MySQL market_discount 테이블 UPSERT
+홈플러스 할인 상품 크롤러 (재작성)
+=====================================
+- URL: https://homeplus.co.kr/Page/EventWeekly
+- 방식: article 42개 발견 확인됨. inner_text() 파싱으로 전환.
+  텍스트 형식: "상품명 / 분류 / ... / 정가원 / N%할인가원 / ..."
 """
-
-import asyncio
 import logging
 import re
 from datetime import date
-from typing import Optional
 
-from playwright.async_api import async_playwright, Page, TimeoutError as PlaywrightTimeoutError
+from playwright.async_api import Page, TimeoutError as PWTimeout
+from utils import normalize_ingredient, extract_prices_from_text, is_ui_text, clean_product_name, dedup_items
 
 logger = logging.getLogger(__name__)
 
-
-INGREDIENT_KEYWORDS = [
-    "삼겹살", "목살", "소고기", "닭고기", "돼지고기", "오리", "양고기",
-    "연어", "고등어", "갈치", "오징어", "새우", "꽃게", "조개", "전복",
-    "두부", "계란", "달걀", "우유", "치즈",
-    "양파", "감자", "당근", "마늘", "파", "대파", "생강", "고추",
-    "배추", "무", "브로콜리", "시금치", "깻잎", "상추", "양배추",
-    "사과", "배", "딸기", "포도", "바나나", "오렌지", "귤", "수박", "참외",
-    "버섯", "느타리", "표고", "팽이버섯",
-    "쌀", "현미", "보리",
-    "된장", "간장", "고추장", "참기름", "들기름", "식용유",
-    "라면", "파스타", "국수",
+HOMEPLUS_URLS = [
+    "https://homeplus.co.kr/Page/EventWeekly",
+    "https://homeplus.co.kr/exhibit?promoNo=20311",  # 신상품/특가 대안
 ]
-
-
-def normalize_ingredient(product_name: str) -> str:
-    name = product_name.strip()
-    for keyword in INGREDIENT_KEYWORDS:
-        if keyword in name:
-            return keyword
-    parts = name.split()
-    return " ".join(parts[:2]) if len(parts) >= 2 else name
-
-
-def parse_price(text: Optional[str]) -> Optional[int]:
-    if not text:
-        return None
-    digits = re.sub(r"[^\d]", "", text)
-    return int(digits) if digits else None
 
 
 async def crawl_homeplus(page: Page) -> list[dict]:
     """
-    홈플러스 이번주 특가 상품 크롤링
-    URL: https://mobileapp.homeplus.co.kr/event
+    홈플러스 이번 주 특가 상품 크롤링.
+    article 요소의 inner_text()를 '/' 기준으로 파싱합니다.
+    실제 확인: article 요소 42개, 텍스트에 상품명/가격/할인율 포함.
     """
     results = []
     today = date.today().isoformat()
 
-    try:
-        logger.info("[홈플러스] 크롤링 시작...")
-        await page.goto(
-            "https://homeplus.co.kr/Page/EventWeekly",
-            wait_until="domcontentloaded",
-            timeout=35000,
-        )
-        await page.wait_for_timeout(2500)
-
-        # 팝업 닫기
+    for url in HOMEPLUS_URLS:
+        logger.info("[홈플러스] 시도 URL: %s", url)
         try:
-            for selector in [".close", ".btn-close", "[class*='popup-close']", "[aria-label='close']"]:
-                els = await page.locator(selector).all()
-                for el in els:
-                    if await el.is_visible(timeout=1000):
-                        await el.click()
-                        await page.wait_for_timeout(300)
-        except Exception:
-            pass
+            await page.goto(url, wait_until="domcontentloaded", timeout=40000)
+            await page.wait_for_timeout(3000)
 
-        # 무한 스크롤 또는 더보기 클릭 (최대 2회)
-        for _ in range(2):
-            try:
-                more_btn = page.locator(
-                    "button:has-text('더보기'), .btn-more, [class*='load-more']"
-                ).first
-                if await more_btn.is_visible(timeout=2000):
-                    await more_btn.click()
-                    await page.wait_for_timeout(1500)
-                else:
-                    # 페이지 하단 스크롤로 지연 로딩 유발
-                    await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-                    await page.wait_for_timeout(1500)
-            except Exception:
-                break
+            # 팝업 닫기
+            for sel in [".close", ".btn-close", "[aria-label*='닫']", "[class*='popup'] button"]:
+                try:
+                    for el in await page.locator(sel).all():
+                        if await el.is_visible(timeout=1000):
+                            await el.click()
+                            await page.wait_for_timeout(200)
+                except Exception:
+                    pass
 
-        # 상품 카드 수집 (여러 셀렉터 시도)
-        items = await page.locator(
-            ".product-card, .goods-card, [class*='product-item'], "
-            "[class*='goods-item'], .item, li[class*='prd']"
-        ).all()
+            # 스크롤로 지연 로딩 유발
+            await page.evaluate("window.scrollTo(0, document.body.scrollHeight / 2)")
+            await page.wait_for_timeout(1500)
+            await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            await page.wait_for_timeout(1500)
 
-        logger.info("[홈플러스] 발견된 상품 수: %d", len(items))
+            # JS로 article 요소 + 가격 있는 요소 추출
+            raw_items = await page.evaluate("""
+                () => {
+                    const results = [];
+                    const seen = new Set();
 
-        for item in items[:50]:
-            try:
-                # 상품명
-                name_el = item.locator(
-                    ".product-name, .goods-name, .prd-name, [class*='product-name'], .name"
-                ).first
-                product_name = (await name_el.inner_text()).strip() if await name_el.count() > 0 else ""
+                    // article 우선 탐색 (홈플러스 상품 컨테이너)
+                    let containers = Array.from(document.querySelectorAll('article'));
 
-                if not product_name:
+                    // article이 없으면 li로 폴백
+                    if (containers.length === 0) {
+                        containers = Array.from(document.querySelectorAll('li'));
+                    }
+
+                    for (const el of containers) {
+                        const text = (el.innerText || '').trim();
+                        if (!text.includes('원') || text.length < 5 || text.length > 800) continue;
+
+                        const key = text.substring(0, 60);
+                        if (seen.has(key)) continue;
+                        seen.add(key);
+
+                        const img = el.querySelector('img');
+                        const link = el.querySelector('a[href]');
+                        const imgSrc = img ? (img.src || img.dataset.src || img.dataset.lazy || '') : '';
+
+                        // 행사 기간 추출
+                        const periodMatch = text.match(/~?\\d+\\/\\d+|\\d+\\.\\d+~\\d+\\.\\d+/);
+
+                        results.push({
+                            text: text,
+                            img_src: imgSrc,
+                            href: link ? link.href : '',
+                            period: periodMatch ? periodMatch[0] : null
+                        });
+
+                        if (results.length >= 80) break;
+                    }
+                    return results;
+                }
+            """)
+
+            logger.info("[홈플러스] JS 추출 후보 수: %d", len(raw_items))
+
+            for raw in raw_items:
+                text = raw.get("text", "").strip()
+                if not text:
                     continue
 
-                # 할인가
-                sale_el = item.locator(
-                    ".sale-price, .event-price, [class*='sale'], [class*='discount-price'], .price"
-                ).first
-                # 정가
-                origin_el = item.locator(
-                    ".original-price, [class*='origin'], s, del, [class*='before-price']"
-                ).first
-                # 할인 기간
-                period_el = item.locator("[class*='period'], [class*='date'], .event-date").first
+                # 홈플러스 텍스트 형식:
+                # "상품명 / 분류 / 마일리지 / ... / 9,990원 / 30%6,990원 / 100G당 2,796원"
+                # '/' 로 분리 후 첫 번째 유효 파트를 상품명으로
+                parts = [p.strip() for p in text.split('/') if p.strip()]
 
-                sale_text = await sale_el.inner_text() if await sale_el.count() > 0 else None
-                origin_text = await origin_el.inner_text() if await origin_el.count() > 0 else None
-                period_text = await period_el.inner_text() if await period_el.count() > 0 else None
+                product_name = ""
+                for part in parts:
+                    candidate = clean_product_name(part.split('\n')[0].strip())
+                    if candidate and not is_ui_text(candidate) and len(candidate) >= 3:
+                        product_name = candidate
+                        break
 
-                discount_price = parse_price(sale_text)
-                original_price = parse_price(origin_text)
+                if not product_name:
+                    # 줄 기반 폴백
+                    for line in text.split('\n'):
+                        candidate = clean_product_name(line.strip())
+                        if candidate and not is_ui_text(candidate) and len(candidate) >= 3:
+                            product_name = candidate
+                            break
 
-                discount_rate = None
-                if original_price and discount_price and original_price > 0:
-                    discount_rate = round((original_price - discount_price) / original_price * 100, 2)
+                if not product_name or len(product_name) < 2:
+                    continue
 
-                # 이미지
-                img_el = item.locator("img").first
-                image_url = await img_el.get_attribute("src") if await img_el.count() > 0 else None
+                original_price, discount_price, discount_rate = extract_prices_from_text(text)
+
+                if not discount_price:
+                    continue
+
+                image_url = raw.get("img_src", "")
                 if image_url and image_url.startswith("//"):
                     image_url = "https:" + image_url
 
-                # 상품 링크
-                link_el = item.locator("a").first
-                href = await link_el.get_attribute("href") if await link_el.count() > 0 else None
-                product_url = href if href and href.startswith("http") else (
-                    "https://homeplus.co.kr" + href if href else None
-                )
+                product_url = raw.get("href", "")
 
                 results.append({
                     "market_name": "HOMEPLUS",
-                    "product_name": product_name,
+                    "product_name": product_name[:255],
                     "ingredient_name": normalize_ingredient(product_name),
                     "original_price": original_price,
                     "discount_price": discount_price,
                     "discount_rate": discount_rate,
-                    "discount_period": period_text,
-                    "image_url": image_url,
-                    "product_url": product_url,
+                    "discount_period": raw.get("period"),
+                    "image_url": image_url[:500] if image_url else None,
+                    "product_url": product_url[:500] if product_url else None,
                     "crawled_date": today,
                 })
 
-            except Exception as e:
-                logger.debug("[홈플러스] 개별 상품 파싱 실패: %s", e)
-                continue
+            results = dedup_items(results)
+            if results:
+                logger.info("[홈플러스] 크롤링 완료: %d건 (URL: %s)", len(results), url)
+                break
 
-        logger.info("[홈플러스] 크롤링 완료: %d건", len(results))
+        except PWTimeout:
+            logger.error("[홈플러스] 타임아웃: %s", url)
+        except Exception as e:
+            logger.error("[홈플러스] 오류 (%s): %s", url, e)
 
-    except PlaywrightTimeoutError:
-        logger.error("[홈플러스] 페이지 로드 타임아웃")
-    except Exception as e:
-        logger.error("[홈플러스] 크롤링 오류: %s", e)
+    if not results:
+        logger.warning("[홈플러스] 모든 URL에서 상품을 찾지 못했습니다.")
 
     return results

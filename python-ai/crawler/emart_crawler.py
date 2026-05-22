@@ -1,155 +1,143 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-냉장고 파먹기 - 이마트 할인 상품 크롤러
-========================================
-대상: 이마트 행사/할인 상품 페이지
-방식: Playwright (Chromium headless)
-저장: MySQL market_discount 테이블 UPSERT
+이마트 할인 상품 크롤러
+================================
+- URL: https://emart.ssg.com/ (메인 페이지 특가 섹션)
+- JS evaluate로 이미지+가격이 있는 요소 추출
+- 상품명 추출 시 UI 버튼 텍스트 필터링
 """
-
-import asyncio
 import logging
 import re
 from datetime import date
-from typing import Optional
 
-from playwright.async_api import async_playwright, Page, TimeoutError as PlaywrightTimeoutError
+from playwright.async_api import Page, TimeoutError as PWTimeout
+from utils import normalize_ingredient, extract_prices_from_text, is_ui_text, clean_product_name, dedup_items
 
 logger = logging.getLogger(__name__)
 
-
-# ──────────────────────────────────────────────
-# 이마트 식재료 키워드 정규화 매핑
-# 상품명에서 핵심 식재료 키워드를 추출하는 용도
-# ──────────────────────────────────────────────
-INGREDIENT_KEYWORDS = [
-    "삼겹살", "목살", "소고기", "닭고기", "돼지고기", "오리", "양고기",
-    "연어", "고등어", "갈치", "오징어", "새우", "꽃게", "조개", "전복",
-    "두부", "계란", "달걀", "우유", "치즈",
-    "양파", "감자", "당근", "마늘", "파", "대파", "생강", "고추",
-    "배추", "무", "브로콜리", "시금치", "깻잎", "상추", "양배추",
-    "사과", "배", "딸기", "포도", "바나나", "오렌지", "귤", "수박", "참외",
-    "버섯", "느타리", "표고", "팽이버섯",
-    "쌀", "현미", "보리",
-    "된장", "간장", "고추장", "참기름", "들기름", "식용유",
-    "라면", "파스타", "국수",
+EMART_URLS = [
+    "https://emart.ssg.com/plan/listPrd.ssg?mId=54&mCategoryCd=MU&dispCtgId=6000036831",
+    "https://emart.ssg.com/",
 ]
 
 
-def normalize_ingredient(product_name: str) -> str:
-    """상품명에서 대표 식재료명을 추출. 매칭 안되면 상품명 첫 2어절 반환."""
-    name = product_name.strip()
-    for keyword in INGREDIENT_KEYWORDS:
-        if keyword in name:
-            return keyword
-    # 키워드 미매칭 시 첫 2어절 추출
-    parts = name.split()
-    return " ".join(parts[:2]) if len(parts) >= 2 else name
-
-
-def parse_price(text: Optional[str]) -> Optional[int]:
-    """'12,900원' → 12900 정수 변환. 실패 시 None."""
-    if not text:
-        return None
-    digits = re.sub(r"[^\d]", "", text)
-    return int(digits) if digits else None
-
-
 async def crawl_emart(page: Page) -> list[dict]:
-    """
-    이마트 특가/할인 상품 크롤링
-    URL: https://emart.ssg.com/sale/salePlanList.ssg
-    """
+    """이마트 특가/할인 상품 크롤링."""
     results = []
     today = date.today().isoformat()
 
-    try:
-        logger.info("[이마트] 크롤링 시작...")
-        await page.goto(
-            "https://emart.ssg.com/sale/salePlanList.ssg",
-            wait_until="domcontentloaded",
-            timeout=30000,
-        )
-        await page.wait_for_timeout(2000)
-
-        # 팝업 닫기 시도
+    for url in EMART_URLS:
+        logger.info("[이마트] 시도 URL: %s", url)
         try:
-            popup_close = page.locator(".btn_close, .close, [class*='close']").first
-            if await popup_close.is_visible(timeout=2000):
-                await popup_close.click()
-                await page.wait_for_timeout(500)
-        except Exception:
-            pass
+            await page.goto(url, wait_until="domcontentloaded", timeout=35000)
+            await page.wait_for_timeout(3000)
 
-        # 상품 카드 목록 수집
-        items = await page.locator(".cunit_thmb, .item_thmb, .unit_thmb").all()
+            # 팝업 닫기
+            for sel in [".btn_close", ".close", "[class*='close']", "button[aria-label*='닫']"]:
+                try:
+                    el = page.locator(sel).first
+                    if await el.is_visible(timeout=1000):
+                        await el.click()
+                        await page.wait_for_timeout(300)
+                except Exception:
+                    pass
 
-        if not items:
-            # 대체 셀렉터 시도
-            items = await page.locator("li[class*='item'], .s-card, [class*='goods_item']").all()
+            # JS로 상품 요소 추출 (이미지 + 가격 있는 li/article)
+            raw_items = await page.evaluate("""
+                () => {
+                    const results = [];
+                    const seen = new Set();
+                    const candidates = document.querySelectorAll(
+                        'li, article, [class*="cunit"], [class*="item_info"]'
+                    );
+                    for (const el of candidates) {
+                        const text = (el.innerText || '').trim();
+                        if (!text.includes('원')) continue;
+                        if (text.length < 10 || text.length > 400) continue;
+                        const img = el.querySelector('img[src]');
+                        if (!img) continue;
 
-        logger.info("[이마트] 발견된 상품 수: %d", len(items))
+                        // 상품 이미지인지 확인 (아이콘/로고 제외)
+                        const src = img.src || '';
+                        if (!src || src.includes('icon') || src.includes('logo') || src.includes('banner')) continue;
 
-        for item in items[:50]:  # 최대 50개
-            try:
-                # 상품명
-                name_el = item.locator(".title, .name, [class*='title'], [class*='name']").first
-                product_name = (await name_el.inner_text()).strip() if await name_el.count() > 0 else ""
+                        const key = text.substring(0, 60);
+                        if (seen.has(key)) continue;
+                        seen.add(key);
+
+                        const link = el.querySelector('a[href*="item"]');
+                        results.push({
+                            text: text,
+                            img_src: src,
+                            href: link ? link.href : (el.querySelector('a') ? el.querySelector('a').href : '')
+                        });
+                        if (results.length >= 80) break;
+                    }
+                    return results;
+                }
+            """)
+
+            logger.info("[이마트] JS 추출 후보 수: %d", len(raw_items))
+
+            for raw in raw_items:
+                text = raw.get("text", "").strip()
+                if not text:
+                    continue
+
+                # 줄 단위로 분리 후 상품명 추출
+                lines = [l.strip() for l in text.split('\n') if l.strip()]
+
+                product_name = ""
+                for line in lines:
+                    cleaned = clean_product_name(line)
+                    if (cleaned
+                            and not is_ui_text(cleaned)
+                            and len(cleaned) >= 3
+                            and not re.match(r'^[\d,]+$', cleaned)):
+                        product_name = cleaned
+                        break
 
                 if not product_name:
                     continue
 
-                # 가격 정보
-                sale_price_el = item.locator("[class*='sale'], [class*='discount'], .price").first
-                original_price_el = item.locator("[class*='origin'], [class*='before'], s").first
+                original_price, discount_price, discount_rate = extract_prices_from_text(text)
 
-                sale_price_text = await sale_price_el.inner_text() if await sale_price_el.count() > 0 else None
-                original_price_text = await original_price_el.inner_text() if await original_price_el.count() > 0 else None
+                if not discount_price:
+                    continue
 
-                discount_price = parse_price(sale_price_text)
-                original_price = parse_price(original_price_text)
-
-                # 할인율 계산
-                discount_rate = None
-                if original_price and discount_price and original_price > 0:
-                    discount_rate = round((original_price - discount_price) / original_price * 100, 2)
-
-                # 이미지
-                img_el = item.locator("img").first
-                image_url = await img_el.get_attribute("src") if await img_el.count() > 0 else None
+                image_url = raw.get("img_src", "")
                 if image_url and image_url.startswith("//"):
                     image_url = "https:" + image_url
 
-                # 링크
-                link_el = item.locator("a").first
-                href = await link_el.get_attribute("href") if await link_el.count() > 0 else None
-                product_url = href if href and href.startswith("http") else (
-                    "https://emart.ssg.com" + href if href else None
-                )
+                product_url = raw.get("href", "")
 
                 results.append({
                     "market_name": "EMART",
-                    "product_name": product_name,
+                    "product_name": product_name[:255],
                     "ingredient_name": normalize_ingredient(product_name),
                     "original_price": original_price,
                     "discount_price": discount_price,
                     "discount_rate": discount_rate,
                     "discount_period": None,
-                    "image_url": image_url,
-                    "product_url": product_url,
+                    "image_url": image_url[:500] if image_url else None,
+                    "product_url": product_url[:500] if product_url else None,
                     "crawled_date": today,
                 })
 
-            except Exception as e:
-                logger.debug("[이마트] 개별 상품 파싱 실패: %s", e)
-                continue
+            # 중복 제거
+            results = dedup_items(results)
 
-        logger.info("[이마트] 크롤링 완료: %d건", len(results))
+            if results:
+                logger.info("[이마트] 크롤링 완료: %d건 (URL: %s)", len(results), url)
+                break
 
-    except PlaywrightTimeoutError:
-        logger.error("[이마트] 페이지 로드 타임아웃")
-    except Exception as e:
-        logger.error("[이마트] 크롤링 오류: %s", e)
+        except PWTimeout:
+            logger.error("[이마트] 타임아웃: %s", url)
+        except Exception as e:
+            logger.error("[이마트] 오류 (%s): %s", url, e)
+
+    if not results:
+        logger.warning("[이마트] 모든 URL에서 상품을 찾지 못했습니다.")
 
     return results
