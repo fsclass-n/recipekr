@@ -36,7 +36,7 @@ def generate_recipes(ingredients: str, health_type: str, top_n: int) -> dict:
     genai.configure(api_key=api_key)
     
     # JSON 스키마를 강제하기 위해 generation_config 사용
-    model = genai.GenerativeModel("gemini-flash-latest")
+    model = genai.GenerativeModel("gemini-flash-lite-latest")
     
     prompt = f"""
 당신은 최고의 창의적인 요리사입니다. 사용자가 선택한 다음 재료를 **주재료로 반드시 활용하여** {top_n}가지의 새롭고 맛있는 레시피를 창작해 주세요.

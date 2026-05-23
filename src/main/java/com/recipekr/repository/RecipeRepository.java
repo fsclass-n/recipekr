@@ -34,4 +34,23 @@ public class RecipeRepository {
         String sql = "SELECT * FROM recipes ORDER BY id DESC";
         return jdbcTemplate.query(sql, recipeRowMapper);
     }
+
+    /**
+     * 총 레시피 수 조회
+     * @return 레시피 수
+     */
+    public long count() {
+        String sql = "SELECT COUNT(*) FROM recipes";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class);
+        return count != null ? count : 0L;
+    }
+
+    /**
+     * 모든 레시피의 재료 목록만 추출
+     * @return 재료 목록 리스트
+     */
+    public List<String> findAllIngredients() {
+        String sql = "SELECT ingredients FROM recipes WHERE ingredients IS NOT NULL";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
 }

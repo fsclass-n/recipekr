@@ -77,7 +77,15 @@
                         <i class="bi bi-person-circle me-1"></i>
                         <span sec:authentication="principal.nickname">사용자</span>님
                     </span>
-                    <a th:href="@{/auth/logout}" class="btn btn-outline-light btn-sm px-3">
+                    
+                    <!-- 관리자 대시보드 버튼 (admin 계정 전용) -->
+                    <div th:if="${#authentication.principal.username == 'admin'}">
+                        <a th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm px-3 ms-2 text-dark fw-bold">
+                            <i class="bi bi-speedometer2 me-1"></i>관리자
+                        </a>
+                    </div>
+                    
+                    <a th:href="@{/auth/logout}" class="btn btn-outline-light btn-sm px-3 ms-2">
                         <i class="bi bi-box-arrow-right me-1"></i>로그아웃
                     </a>
                 </div>
@@ -104,8 +112,16 @@
         </div>
     </div>
 
-    <!-- 결과 없음 -->
-    <div th:if="${#lists.isEmpty(results)}" class="card-dark p-5 empty-state">
+    <!-- 에러 발생 시 -->
+    <div th:if="${errorMsg != null}" class="card-dark p-5 empty-state" style="border: 1px solid rgba(239, 68, 68, 0.3);">
+        <i class="bi bi-exclamation-triangle fs-1 d-block mb-3 text-danger"></i>
+        <h5 class="text-white mb-2">AI 레시피 생성 중 오류가 발생했습니다</h5>
+        <p style="color:rgba(255,255,255,0.6);" th:text="${errorMsg}"></p>
+        <a th:href="@{/recipe/recommend(open=true)}" class="btn btn-back mt-2 d-inline-block">← 다시 시도하기</a>
+    </div>
+
+    <!-- 에러는 없고 추천 결과도 없을 때 -->
+    <div th:if="${errorMsg == null and #lists.isEmpty(results)}" class="card-dark p-5 empty-state">
         <i class="bi bi-emoji-frown fs-1 d-block mb-3"></i>
         <p style="color:rgba(255,255,255,0.6);">추천 결과가 없습니다. 재료를 더 추가하거나 건강 유형을 변경해 보세요.</p>
         <a th:href="@{/recipe/recommend(open=true)}" class="btn btn-back mt-2 d-inline-block">← 다시 입력하기</a>

@@ -192,4 +192,14 @@ public class DiscountItemRepository {
         log.info("[DiscountItemRepository] 오래된 할인 데이터 {}건 삭제 (기준: {})", deleted, before);
         return deleted;
     }
+
+    /**
+     * 총 할인 식재료 수 조회
+     * @return 식재료 수
+     */
+    public long count() {
+        String sql = "SELECT COUNT(*) FROM market_discount";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class);
+        return count != null ? count : 0L;
+    }
 }

@@ -24,6 +24,7 @@ public class RecommendController {
 
     private final AiRecommendService aiRecommendService;
     private final DiscountItemRepository discountItemRepository;
+    private final com.recipekr.repository.RecipeRepository recipeRepository;
 
     /** 추천 입력 폼 페이지 (냉장고 UI) */
     @GetMapping("/recommend")
@@ -145,11 +146,34 @@ public class RecommendController {
 
         Map<String, Object> aiResult = aiRecommendService.recommend(ingredients, healthType, topN);
 
-        Object recommendations = aiResult.getOrDefault("recommendations", List.of());
+        Object recommendationsObj = aiResult.getOrDefault("recommendations", List.of());
         Object aiMessage = aiResult.get("ai_message");
+        Object errorMsg = aiResult.get("error");
 
-        model.addAttribute("results",     recommendations);
+        // 에러가 없고 정상적으로 레시피가 생성된 경우 DB에 저장 (대시보드 통계용)
+        if (errorMsg == null && recommendationsObj instanceof List) {
+            try {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> recList = (List<Map<String, Object>>) recommendationsObj;
+                for (Map<String, Object> rec : recList) {
+                    com.recipekr.domain.Recipe recipe = com.recipekr.domain.Recipe.builder()
+                            .title(String.valueOf(rec.get("title")))
+                            .ingredients(String.valueOf(rec.get("ingredients")))
+                            .calories(rec.get("calories") instanceof Number ? ((Number)rec.get("calories")).intValue() : 0)
+                            .healthType(String.valueOf(rec.get("health_type")))
+                            .recipeText(String.valueOf(rec.get("recipe_text")))
+                            .build();
+                    recipeRepository.save(recipe);
+                }
+            } catch (Exception e) {
+                // 저장 중 오류가 발생해도 사용자에게 결과는 보여주도록 무시
+                e.printStackTrace();
+            }
+        }
+
+        model.addAttribute("results",     recommendationsObj);
         model.addAttribute("aiMessage",   aiMessage);
+        model.addAttribute("errorMsg",    errorMsg);
         model.addAttribute("ingredients", ingredients);
         model.addAttribute("healthType",  healthType);
         return "recipe/result";

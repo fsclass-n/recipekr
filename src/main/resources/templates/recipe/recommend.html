@@ -619,9 +619,20 @@
                     <a class="nav-link active" th:href="@{/recipe/recommend}"><i class="bi bi-stars me-1"></i>레시피 추천</a>
                 </li>
             </ul>
-            <div class="d-flex align-items-center gap-3" sec:authorize="isAuthenticated()">
-                <span class="text-white-50"><i class="bi bi-person-circle me-1"></i><span sec:authentication="principal.nickname">사용자</span>님</span>
-                <a th:href="@{/auth/logout}" class="btn btn-outline-light btn-sm px-3"><i class="bi bi-box-arrow-right me-1"></i>로그아웃</a>
+            <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-3">
+                <span class="text-white-50 d-none d-md-inline">
+                    <i class="bi bi-person-circle me-1"></i>
+                    <span sec:authentication="principal.nickname">사용자</span>님
+                </span>
+                
+                <!-- 관리자 대시보드 버튼 (admin 계정 전용) -->
+                <div th:if="${#authentication.principal.username == 'admin'}">
+                    <a th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm px-3 ms-2 text-dark fw-bold">
+                        <i class="bi bi-speedometer2 me-1"></i>관리자
+                    </a>
+                </div>
+                
+                <a th:href="@{/auth/logout}" class="btn btn-outline-light btn-sm px-3 ms-2"><i class="bi bi-box-arrow-right me-1"></i>로그아웃</a>
             </div>
             <div class="d-flex align-items-center gap-3" sec:authorize="!isAuthenticated()">
                 <a th:href="@{/auth/login}" class="btn btn-outline-light btn-sm px-3"><i class="bi bi-box-arrow-in-right me-1"></i>로그인</a>

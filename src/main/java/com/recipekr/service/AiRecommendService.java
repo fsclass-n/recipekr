@@ -126,7 +126,7 @@ public class AiRecommendService {
             if (json.startsWith("{\"error\"")) {
                 Map<String, Object> err = objectMapper.readValue(json, new TypeReference<>() {});
                 log.error("[AI] Python 에러 응답: {}", err.get("error"));
-                return Collections.emptyMap();
+                return err; // 에러 메시지가 담긴 Map을 그대로 반환
             }
 
             // ⑦ 정상 JSON 객체 파싱 (recommendations, ai_message 포함)
