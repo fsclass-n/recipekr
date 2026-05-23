@@ -127,7 +127,7 @@ public class DiscountItemRepository {
     public List<DiscountItem> findTodayItems() {
         String sql = """
                 SELECT * FROM market_discount
-                WHERE crawled_date = CURDATE()
+                WHERE crawled_date = (SELECT MAX(crawled_date) FROM market_discount)
                 ORDER BY discount_rate DESC
                 """;
         return jdbcTemplate.query(sql, DISCOUNT_ITEM_MAPPER);
@@ -142,7 +142,7 @@ public class DiscountItemRepository {
     public List<DiscountItem> findTodayItemsByMarket(String marketName) {
         String sql = """
                 SELECT * FROM market_discount
-                WHERE crawled_date = CURDATE()
+                WHERE crawled_date = (SELECT MAX(crawled_date) FROM market_discount)
                   AND market_name = ?
                 ORDER BY discount_rate DESC
                 """;
@@ -159,7 +159,7 @@ public class DiscountItemRepository {
     public List<DiscountItem> findTodayByIngredient(String ingredientName) {
         String sql = """
                 SELECT * FROM market_discount
-                WHERE crawled_date = CURDATE()
+                WHERE crawled_date = (SELECT MAX(crawled_date) FROM market_discount)
                   AND ingredient_name = ?
                 ORDER BY discount_price ASC
                 """;
@@ -175,7 +175,7 @@ public class DiscountItemRepository {
         String sql = """
                 SELECT DISTINCT market_name
                 FROM market_discount
-                WHERE crawled_date = CURDATE()
+                WHERE crawled_date = (SELECT MAX(crawled_date) FROM market_discount)
                 """;
         return jdbcTemplate.queryForList(sql, String.class);
     }

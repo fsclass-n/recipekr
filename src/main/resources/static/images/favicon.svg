@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- 냉장고 본체 -->
+  <rect x="25" y="10" width="50" height="80" rx="6" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/>
+  <!-- 상단 냉동실 선 -->
+  <line x1="25" y1="35" x2="75" y2="35" stroke="#cbd5e1" stroke-width="2"/>
+  <!-- 손잡이 상단 -->
+  <rect x="65" y="15" width="4" height="15" rx="2" fill="#94a3b8"/>
+  <!-- 손잡이 하단 -->
+  <rect x="65" y="45" width="4" height="25" rx="2" fill="#94a3b8"/>
+  <!-- AI 반짝이 효과 -->
+  <path d="M10 20 L15 15 L20 20 L15 25 Z" fill="#3b82f6"/>
+  <path d="M80 80 L85 75 L90 80 L85 85 Z" fill="#3b82f6"/>
+  <path d="M85 30 L88 27 L91 30 L88 33 Z" fill="#f59e0b"/>
+</svg>

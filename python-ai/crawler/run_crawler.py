@@ -54,10 +54,12 @@ logger = logging.getLogger("run_crawler")
 # ── DB 연결 ─────────────────────────────────────────────────
 def get_db_config() -> dict:
     import re
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
     tidb_url = os.environ.get("TIDB_URL", "")
     host, port, database = "localhost", 4000, "recipekr"
     if tidb_url:
-        m = re.search(r"mysql://([^:/]+):?(\d+)?/([^?]+)", tidb_url)
+        m = re.search(r"(?:jdbc:)?mysql://([^:/]+):?(\d+)?/([^?]+)", tidb_url)
         if m:
             host = m.group(1)
             port = int(m.group(2)) if m.group(2) else 3306

@@ -114,13 +114,13 @@ main {
 }
 
 .brand-icon {
-    font-size: 1.4rem;
+    font-size: 1.8rem;
     line-height: 1;
 }
 
 .brand-text {
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-size: 1.3rem;
+    font-weight: 800;
     background: var(--gradient-brand);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

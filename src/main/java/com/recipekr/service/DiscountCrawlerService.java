@@ -41,6 +41,14 @@ public class DiscountCrawlerService {
     private final DiscountItemRepository discountItemRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private String getPythonExecutable() {
+        String condaPath = "C:\\Users\\whyei\\anaconda3\\envs\\conda_venv\\python.exe";
+        if (new java.io.File(condaPath).exists()) {
+            return condaPath;
+        }
+        return "python";
+    }
+
     /** 크롤러 스크립트 위치: {프로젝트루트}/python-ai/crawler/run_crawler.py */
     private Path getCrawlerScript() {
         return Paths.get(System.getProperty("user.dir"))
@@ -77,7 +85,7 @@ public class DiscountCrawlerService {
 
         try {
             ProcessBuilder pb = new ProcessBuilder(
-                    "python",
+                    getPythonExecutable(),
                     scriptPath.toString(),
                     "--market", market
             );

@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import google.generativeai as genai
+from dotenv import load_dotenv, find_dotenv
 
 # ----------------------------------------------------------------
 # 경로 설정
@@ -28,6 +29,9 @@ BASE_DIR  = Path(__file__).resolve().parent
 DATA_PATH = BASE_DIR / "data" / "recipes.csv"
 MODEL_DIR = BASE_DIR / "models"
 MODEL_DIR.mkdir(exist_ok=True)
+
+# 루트 또는 현재 폴더의 .env 자동 탐색 및 로드
+load_dotenv(find_dotenv())
 
 # 저장할 파일 경로
 EMBEDDINGS_MATRIX_PATH = MODEL_DIR / "embeddings_matrix.pkl"
@@ -58,7 +62,7 @@ def build_feature(row: pd.Series) -> str:
     return f"요리명: {title}\n재료: {ingredients}\n건강 유형: {health_type}식"
 
 def train():
-    print("[train.py] 🤖 Gemini 임베딩 생성 시작...")
+    print("[train.py] Gemini 임베딩 생성 시작...")
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         print("❌ 에러: GEMINI_API_KEY 환경변수가 설정되지 않았습니다.")
@@ -73,8 +77,8 @@ def train():
     texts = df.apply(build_feature, axis=1).tolist()
 
     # 2) 제미나이 API 호출하여 임베딩 생성 (무료 티어 제약 고려하여 chunk 단위 처리)
-    # text-embedding-004 모델은 768차원 벡터 반환
-    model_name = "models/text-embedding-004"
+    # 2026년 기준 최신 임베딩 모델 사용
+    model_name = "models/gemini-embedding-2"
     embeddings = []
     
     # 한 번에 요청할 수 있는 최대 크기에 따라 분할 처리 (예: 100개 단위)
@@ -108,7 +112,7 @@ def train():
         pickle.dump(df[["id", "title", "ingredients", "calories",
                          "health_type", "recipe_text"]].to_dict(orient="records"), f)
 
-    print(f"[train.py] ✅ 제미나이 임베딩 파일 저장 완료: {MODEL_DIR}")
+    print(f"[train.py] 제미나이 임베딩 파일 저장 완료: {MODEL_DIR}")
 
 if __name__ == "__main__":
     train()
