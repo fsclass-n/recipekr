@@ -92,6 +92,12 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    opacity: 1;
+    transition: opacity 0.3s ease-out;
+}
+
+body.fade-out {
+    opacity: 0;
 }
 
 main {

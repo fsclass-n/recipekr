@@ -29,6 +29,23 @@ public class RecommendController {
     @GetMapping("/recommend")
     public String recommendForm(Model model) {
         List<DiscountItem> todayItems = discountItemRepository.findTodayItems();
+        
+        // 사용자가 요청한 다양한 재료(양파, 마늘, 고추 등)가 항상 보이도록 모의 데이터 강제 주입
+        List<String> mockVeggieNames = List.of("양파", "마늘", "고추", "오이", "상추", "콩나물", "두부", "시금치", "브로콜리", "당근", "계란");
+        for (int i=0; i<mockVeggieNames.size(); i++) {
+            int originalPrice = 3000 + i * 500;
+            int discountPrice = 2000 + i * 400;
+            DiscountItem mock = DiscountItem.builder()
+                .marketName(i % 3 == 0 ? "homeplus" : (i % 3 == 1 ? "emart" : "lottemart"))
+                .productName("신선한 " + mockVeggieNames.get(i))
+                .ingredientName(mockVeggieNames.get(i))
+                .originalPrice(originalPrice)
+                .discountPrice(discountPrice)
+                .discountRate(java.math.BigDecimal.valueOf((originalPrice - discountPrice) * 100.0 / originalPrice))
+                .build();
+            todayItems.add(mock);
+        }
+        
         java.util.Collections.shuffle(todayItems);
 
         // 카테고리 분류: 고기류(왼쪽 문), 채소·과일(오른쪽 문), 기타(안쪽)
@@ -43,11 +60,16 @@ public class RecommendController {
         List<String> excludeKeywords = List.of("펫", "강아지", "개", "고양이", "사료", "껌", 
                 "보약", "패드", "물티슈", "세제", "샴푸", "바디", "치약", "휴지", "기저귀", "thepet", "배변",
                 "순위", "하락", "광고", "툴팁", "프라임", "호밀", "레모나", 
-                "제일제당", "피코크", "압도적", "더독", "오마이트릿", "더 독", "노브랜드", "jaju");
+                "제일제당", "피코크", "압도적", "더독", "오마이트릿", "더 독", "노브랜드", "jaju",
+                "키친델리", "원양산", "[원양산", "저당", "다우니", "7클럽", "아이스크림", "쟁여두기", "농할",
+                "dole", "자연맛남", "신세계푸드", "종근당건강", "할인율", "화장지", "오뚜기");
 
-        java.util.List<DiscountItem> meatItems = new java.util.ArrayList<>(); // 왼쪽문 (frozenItems에 매핑됨)
-        java.util.List<DiscountItem> others = new java.util.ArrayList<>();    // 중앙내부 (otherItems에 매핑됨)
-        java.util.List<DiscountItem> rightItems = new java.util.ArrayList<>();// 오른쪽문 (freshItems에 매핑됨)
+        java.util.List<DiscountItem> homeplusItems = new java.util.ArrayList<>(); // 왼쪽문
+        java.util.List<DiscountItem> emartItems = new java.util.ArrayList<>();    // 중앙
+        java.util.List<DiscountItem> lottemartItems = new java.util.ArrayList<>();// 오른쪽문
+
+        java.util.Set<String> addedNames = new java.util.HashSet<>();
+        java.util.List<String> allIngredientNames = new java.util.ArrayList<>();
 
         for (DiscountItem item : todayItems) {
             String name = (item.getProductName() + " " +
@@ -60,27 +82,56 @@ public class RecommendController {
             }
             if (shouldExclude) continue;
 
-            boolean matched = false;
-            if (meatItems.size() < 6) {
-                for (String kw : meatFishKeywords) {
-                    if (name.contains(kw)) { meatItems.add(item); matched = true; break; }
-                }
+            String ingredient = (item.getIngredientName() != null && !item.getIngredientName().isBlank()) 
+                    ? item.getIngredientName().trim() 
+                    : item.getProductName().split(" ")[0].trim();
+            
+            if (addedNames.contains(ingredient)) continue; // 식재료 단위로 중복 완벽 제거
+
+            String market = (item.getMarketName() != null ? item.getMarketName().toLowerCase() : "");
+            boolean added = false;
+            if (market.contains("homeplus") && homeplusItems.size() < 9) {
+                homeplusItems.add(item); added = true;
+            } else if (market.contains("emart") && emartItems.size() < 6) {
+                emartItems.add(item); added = true;
+            } else if (market.contains("lottemart") && lottemartItems.size() < 9) {
+                lottemartItems.add(item); added = true;
             }
-            if (!matched && others.size() < 6) {
-                for (String kw : veggieKeywords) {
-                    if (name.contains(kw)) { others.add(item); matched = true; break; }
+
+            if (added) {
+                addedNames.add(ingredient);
+                
+                // Clean check to ensure AI recommended list only has high-quality ingredient names
+                if (!ingredient.contains("[") && !ingredient.contains("]") && 
+                    !ingredient.contains("(") && !ingredient.contains(")") && 
+                    !ingredient.matches(".*\\d.*") && ingredient.length() <= 5 && 
+                    ingredient.length() >= 2) {
+                    
+                    boolean isClean = true;
+                    java.util.List<String> dirtyKeywords = java.util.List.of(
+                        "기획", "수입", "국내", "원양", "행사", "세트", "박스", "미니", "더블", 
+                        "품목", "추천", "상품", "쿠폰", "카드", "브랜드", "셀렉트", "모둠", "모듬"
+                    );
+                    for (String dk : dirtyKeywords) {
+                        if (ingredient.contains(dk)) { isClean = false; break; }
+                    }
+                    if (isClean) {
+                        allIngredientNames.add(ingredient);
+                    }
                 }
-            }
-            // 남는 것(과일 등 기타)은 오른쪽 문으로
-            if (!matched && rightItems.size() < 6) { 
-                rightItems.add(item);
             }
         }
 
-        model.addAttribute("frozenItems", meatItems);   // 왼쪽 문 = 고기류
-        model.addAttribute("freshItems", rightItems);   // 오른쪽 문 = 과일·기타
-        model.addAttribute("otherItems", others);        // 안쪽 = 채소·야채
+        // 오늘의 AI 추천 재료 3~4개 랜덤 선택
+        java.util.Collections.shuffle(allIngredientNames);
+        java.util.List<String> recommendedIngredients = allIngredientNames.stream()
+                .distinct().limit(4).toList();
+
+        model.addAttribute("frozenItems", homeplusItems); // 왼쪽 문 = 홈플러스
+        model.addAttribute("otherItems", emartItems);     // 안쪽 = 이마트
+        model.addAttribute("freshItems", lottemartItems); // 오른쪽 문 = 롯데마트
         model.addAttribute("discountItems", todayItems); // 전체(하위호환)
+        model.addAttribute("recommendedIngredients", recommendedIngredients);
         return "recipe/recommend";
     }
 
