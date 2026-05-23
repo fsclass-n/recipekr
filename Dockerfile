@@ -15,7 +15,7 @@ WORKDIR /app
 
 # 시스템 파이썬 및 필수 도구 설치
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip python3-venv wget && \
+    apt-get install -y python3 python3-pip python3-venv wget fonts-nanum && \
     rm -rf /var/lib/apt/lists/*
 
 # 파이썬 가상환경 생성 (이후 파이썬 명령어는 모두 이 가상환경을 사용)

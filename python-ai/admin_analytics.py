@@ -51,7 +51,12 @@ def main():
                 
                 # Matplotlib 시각화 설정 (다크 테마)
                 plt.style.use('dark_background')
-                plt.rcParams['font.family'] = 'Malgun Gothic' # 윈도우 한글 폰트
+                import platform
+                if platform.system() == 'Windows':
+                    plt.rcParams['font.family'] = 'Malgun Gothic' # 윈도우 한글 폰트
+                else:
+                    plt.rcParams['font.family'] = 'NanumGothic' # 리눅스(Render) 한글 폰트
+
                 plt.rcParams['axes.unicode_minus'] = False
                 
                 fig, ax = plt.subplots(figsize=(10, 5))
