@@ -6,6 +6,7 @@ WORKDIR /app
 COPY . .
 
 # Gradle을 사용하여 애플리케이션 빌드 (테스트는 생략하여 배포 속도 향상)
+RUN chmod +x ./gradlew
 RUN ./gradlew clean build -x test
 
 # 2단계: 실행 환경 설정 (가벼운 JRE 환경 사용)
