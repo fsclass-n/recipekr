@@ -39,5 +39,5 @@ COPY --from=build /app/build/libs/*.jar app.jar
 ENV PORT=8080
 EXPOSE $PORT
 
-# Spring Boot 실행 명령어
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT} -jar app.jar"]
+# Spring Boot 실행 명령어 (Render Free 512MB RAM 제약을 위해 Java 힙 메모리 최적화)
+ENTRYPOINT ["sh", "-c", "java -Xms128m -Xmx256m -Dserver.port=${PORT} -jar app.jar"]

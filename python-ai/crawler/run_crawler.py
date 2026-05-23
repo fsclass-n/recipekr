@@ -180,6 +180,13 @@ async def run_crawlers(market: str = "all", dry_run: bool = False) -> list[dict]
                 "--disable-dev-shm-usage",
                 "--disable-blink-features=AutomationControlled",
                 "--lang=ko-KR",
+                "--disable-gpu",
+                "--disable-software-rasterizer",
+                "--disable-extensions",
+                "--mute-audio",
+                "--no-zygote",
+                "--single-process",
+                "--js-flags=--max-old-space-size=128"
             ],
         )
         context = await browser.new_context(
