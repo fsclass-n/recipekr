@@ -17,5 +17,6 @@ public class Recipe {
     private Integer calories;
     private String healthType;
     private String recipeText;
+    private String username;
     private LocalDateTime createdAt;
 }

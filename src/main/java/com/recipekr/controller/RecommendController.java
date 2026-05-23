@@ -142,6 +142,7 @@ public class RecommendController {
             @RequestParam("ingredients")  String ingredients,
             @RequestParam("health_type")  String healthType,
             @RequestParam(value = "top_n", defaultValue = "3") int topN,
+            org.springframework.security.core.Authentication authentication,
             Model model) {
 
         Map<String, Object> aiResult = aiRecommendService.recommend(ingredients, healthType, topN);
@@ -155,6 +156,9 @@ public class RecommendController {
             try {
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> recList = (List<Map<String, Object>>) recommendationsObj;
+                String username = (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal()))
+                                  ? authentication.getName() : null;
+
                 for (Map<String, Object> rec : recList) {
                     com.recipekr.domain.Recipe recipe = com.recipekr.domain.Recipe.builder()
                             .title(String.valueOf(rec.get("title")))
@@ -162,6 +166,7 @@ public class RecommendController {
                             .calories(rec.get("calories") instanceof Number ? ((Number)rec.get("calories")).intValue() : 0)
                             .healthType(String.valueOf(rec.get("health_type")))
                             .recipeText(String.valueOf(rec.get("recipe_text")))
+                            .username(username)
                             .build();
                     recipeRepository.save(recipe);
                 }

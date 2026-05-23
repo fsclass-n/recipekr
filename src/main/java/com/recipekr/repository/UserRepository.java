@@ -131,4 +131,21 @@ public class UserRepository {
         Long count = jdbcTemplate.queryForObject(sql, Long.class);
         return count != null ? count : 0L;
     }
+
+    /**
+     * 사용자 정보 업데이트 (닉네임, 비밀번호, 이메일)
+     */
+    public void update(User user) {
+        String sql = "UPDATE users SET nickname = ?, password = ?, email = ?, updated_at = ? WHERE username = ?";
+        jdbcTemplate.update(sql, user.getNickname(), user.getPassword(), user.getEmail(), 
+                            Timestamp.valueOf(LocalDateTime.now()), user.getUsername());
+    }
+
+    /**
+     * 사용자 삭제 (회원 탈퇴)
+     */
+    public void deleteByUsername(String username) {
+        String sql = "DELETE FROM users WHERE username = ?";
+        jdbcTemplate.update(sql, username);
+    }
 }
