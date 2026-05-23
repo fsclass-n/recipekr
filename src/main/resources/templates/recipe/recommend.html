@@ -993,14 +993,20 @@
         let fetchDone = false;
         
         const interval = setInterval(() => {
-            p += speed;
-            if (p >= 100) {
-                p = 100;
-                if (fetchDone) {
+            if (!fetchDone) {
+                if (p < 85) {
+                    p += speed;
+                } else if (p < 99) {
+                    // 85% 이후부터는 완전히 멈추지 않고 아주 조금씩(1/10 속도) 증가하여 99%까지만 도달
+                    p += (speed * 0.1);
+                }
+            } else {
+                // 완료 시 100%까지 빠르게 가속
+                p += speed;
+                if (p >= 100) {
+                    p = 100;
                     clearInterval(interval);
                     window.location.href = '/recipe/recommend?open=true';
-                } else {
-                    p = 99; // 크롤링 지연 시 99%에서 대기
                 }
             }
             progressBar.style.width = p + '%';
