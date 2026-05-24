@@ -131,6 +131,7 @@ celerybeat.pid
 .vscode/
 .env
 .venv
+.conda/
 env/
 venv/
 ENV/
