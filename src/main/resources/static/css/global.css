@@ -118,7 +118,7 @@ main {
     height: var(--navbar-height);
     padding-left: 24px;
     padding-right: 24px;
-    transition: background var(--transition-base);
+    transition: all var(--transition-base);
     z-index: 1000;
 }
 
@@ -795,23 +795,31 @@ select.form-control-dark option {
 
 @media (min-width: 992px) {
     .offcanvas-dark {
-        background: transparent !important;
+        background-color: transparent !important;
         border: none !important;
     }
     .offcanvas-body {
         flex-grow: 1 !important;
     }
     .desktop-nav-pill {
+        width: max-content !important;
         margin-left: 1rem;
         align-items: center;
         /* force it to stay left in offcanvas body */
         margin-right: auto !important;
         gap: 0.25rem !important;
-        background: transparent !important;
+        background-color: transparent !important;
         border: none !important;
         box-shadow: none !important;
     }
+    .desktop-nav-pill .nav-item {
+        width: auto !important;
+        flex: 0 0 auto !important;
+    }
     .desktop-nav-pill .nav-link {
+        width: auto !important;
+        display: inline-flex !important;
+        align-items: center;
         padding: 0.4rem 0.8rem !important;
         border-radius: 12px;
         transition: all 0.3s ease;
