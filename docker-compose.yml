@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   app:
+    image: ${DOCKERHUB_USERNAME:-recipekr}/recipekr:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,13 +11,13 @@ services:
       - "80:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-tidb}
-      - TIDB_URL=${TIDB_URL}
-      - TIDB_USERNAME=${TIDB_USERNAME}
-      - TIDB_PASSWORD=${TIDB_PASSWORD}
+      - TIDB_URL=${TIDB_URL:-jdbc:mysql://gateway01.ap-northeast-1.prod.aws.tidbcloud.com:4000/recipekr?useSSL=true&serverTimezone=Asia/Seoul}
+      - TIDB_USERNAME=${TIDB_USERNAME:-2tKL7PvWWp5JakF.root}
+      - TIDB_PASSWORD=${TIDB_PASSWORD:-inZWb4Ps6xN5siFn}
       - RDS_URL=${RDS_URL}
       - RDS_USERNAME=${RDS_USERNAME}
       - RDS_PASSWORD=${RDS_PASSWORD}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-AIzaSyDZMsxz57xvwrX2v5SDzSNEm_lW65fsIUk}
       - JAVA_OPTS=${JAVA_OPTS:- -Xms128m -Xmx256m}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}

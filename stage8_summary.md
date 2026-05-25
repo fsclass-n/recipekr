@@ -117,12 +117,12 @@ cd recipekr
 cp .env.example .env
 nano .env
 ```
-`nano` 편집기가 실행되면 실 주소 정보들로 업데이트합니다.
-- `SPRING_PROFILES_ACTIVE=rds`
-- `RDS_URL=jdbc:mysql://[RDS엔드포인트]:3306/recipekr?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true`
-- `RDS_USERNAME=admin`
-- `RDS_PASSWORD=[설정한암호]`
-- `GEMINI_API_KEY=[보유한제미나이API키]`
+`nano` 편집기가 실행되면 설정을 확인합니다. 기본값으로 이미 기존에 사용하던 TiDB 및 제미나이 API 키 정보가 주입되어 있으므로 별도 편집 없이 바로 저장(`Ctrl+O` -> `Enter` -> `Ctrl+X`)하셔도 무방합니다.
+- `SPRING_PROFILES_ACTIVE=tidb` (기본값으로 설정되어 바로 TiDB로 구동됩니다. 추후 RDS 설정 시 rds로 변경)
+- `TIDB_URL=jdbc:mysql://gateway01.ap-northeast-1.prod.aws.tidbcloud.com:4000/recipekr?useSSL=true&serverTimezone=Asia/Seoul`
+- `TIDB_USERNAME=2tKL7PvWWp5JakF.root`
+- `TIDB_PASSWORD=inZWb4Ps6xN5siFn`
+- `GEMINI_API_KEY=AIzaSyDZMsxz57xvwrX2v5SDzSNEm_lW65fsIUk`
 
 ### [ ] 2) RDS 초기 테이블 생성
 로컬 SQL 클라이언트 툴(DBeaver 등)이나 EC2에 mysql 클라이언트를 깔아 복사한 RDS 데이터베이스에 접속한 뒤, 아래 두 파일의 DDL 쿼리를 순서대로 실행해 줍니다.
@@ -137,4 +137,26 @@ docker-compose up -d --build
 # 실행 로그 체크
 docker-compose logs -f app
 ```
-성공적으로 기동되면 브라우저에서 `http://[EC2_퍼블릭_IP]`로 접속하여 회원가입, 로그인, 마이페이지 기능이 RDS와 잘 맞물려 동작하는지 검증합니다.
+성공적으로 기동되면 브라우저에서 `http://[EC2_퍼블릭_IP]`로 접속하여 회원가입, 로그인, 마이페이지 기능이 TiDB/RDS와 잘 맞물려 동작하는지 검증합니다.
+
+---
+
+## 5. GitHub Actions를 통한 자동 배포 (CI/CD) 설정 방법
+
+새롭게 생성된 [.github/workflows/deploy.yml](file:///d:/git/202605/recipekr/.github/workflows/deploy.yml) 파일은 **GitHub Actions 러너가 소스코드를 기반으로 Docker 이미지를 빌드한 뒤 Docker Hub에 푸시하고, EC2 서버는 이 pre-built 이미지를 다운로드받아 가동**하는 고도화된 배포 방식을 사용합니다.
+- 이 방식은 1GB RAM 프리티어 EC2 서버 내에서 무겁게 빌드를 돌리지 않으므로, **EC2 서버 과부하 및 메모리 부족 현상을 완벽하게 방지**할 수 있습니다.
+
+첨부해 주신 그림의 Repository Secrets 정보를 확인했으며, 이에 맞춰 워크플로우 코드를 매핑했습니다.
+
+### [x] 깃허브 시크릿 설정 체크리스트
+현재 그림처럼 아래 변수들이 정상 등록되어 있으므로 추가 조치가 필요 없습니다.
+- **`DOCKERHUB_USERNAME`**: Docker Hub 로그인 아이디
+- **`DOCKERHUB_TOKEN`**: Docker Hub 로그인 비밀번호/토큰
+- **`EC2_HOST`**: EC2 퍼블릭 IPv4 주소
+- **`EC2_SSH_KEY`**: EC2 SSH 키페어(`.pem`) 파일 내용 전체
+- **`GEMINI_API_KEY`**: 구글 제미나이 API 키
+- **`TIDB_URL`** / **`TIDB_USERNAME`** / **`TIDB_PASSWORD`**: 기존 TiDB 클라우드 접속 정보
+
+> 💡 **안내**: 깃허브 시크릿에 `EC2_USERNAME`이 설정되어 있지 않은 점을 고려하여, 워크플로우 스크립트 내부에서 SSH 접속 계정 명을 **`ubuntu`**로 하드코딩 처리했습니다. 따라서 별도로 `EC2_USERNAME` 시크릿을 추가하지 않으셔도 작동합니다.
+
+변수 등록이 이미 완료되어 있으므로, 수정한 코드를 커밋하고 **`main` 브랜치에 Push** 하시면 GitHub Actions 탭에서 배포 빌드 및 배포 작업이 자동으로 성공적으로 진행됩니다.
