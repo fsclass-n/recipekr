@@ -79,7 +79,7 @@ public class GeminiChatService {
             return "API 키가 설정되지 않았습니다. 관리자에게 문의하세요.";
         }
 
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
 
         try {
             // 요청 바디 생성 (Gemini API 형식에 맞게)
