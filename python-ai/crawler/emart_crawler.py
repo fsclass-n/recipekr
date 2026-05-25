@@ -84,6 +84,9 @@ async def crawl_emart(page: Page) -> list[dict]:
                 text = raw.get("text", "").strip()
                 if not text:
                     continue
+                
+                if "SSG ONLY" in text.upper():
+                    continue
 
                 # 줄 단위로 분리 후 상품명 추출
                 lines = [l.strip() for l in text.split('\n') if l.strip()]

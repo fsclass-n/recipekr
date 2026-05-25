@@ -38,6 +38,14 @@
         }
         .btn-back:hover { background:rgba(255,255,255,0.12); color:#fff; }
         .empty-state { text-align:center; padding:3rem; color:#6b7280; }
+        
+        /* ── 모바일 반응형 ── */
+        @media (max-width: 768px) {
+            .recipe-card { padding: 1.25rem !important; }
+            .result-title { font-size: 1.25rem !important; }
+            .badge-health, .badge-cal { font-size: 0.75rem; padding: 2px 8px; }
+            .badge-rank { width: 30px; height: 30px; font-size: 0.9rem; }
+        }
     </style>
 </head>
 <body>
@@ -49,48 +57,56 @@
             <span class="brand-icon">🍽️</span>
             <span class="brand-text">냉장고 레시피</span>
         </a>
-        <button class="navbar-toggler border-0" type="button"
-                data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
+        <button class="navbar-toggler border-0 custom-toggler" type="button"
+                data-bs-toggle="offcanvas" data-bs-target="#navbarContent" aria-controls="navbarContent">
+            <div class="hamburger-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </button>
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/}">
-                        <i class="bi bi-house-door me-1"></i>홈
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" th:href="@{/recipe/recommend}">
-                        <i class="bi bi-stars me-1"></i>레시피 추천
-                    </a>
-                </li>
-            </ul>
-            <div class="d-flex align-items-center gap-2">
-                <div sec:authorize="isAnonymous()" class="d-flex gap-2">
-                    <a th:href="@{/auth/login}" class="btn btn-outline-light btn-sm px-3">
-                        <i class="bi bi-box-arrow-in-right me-1"></i>로그인
-                    </a>
-                </div>
-                <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-3">
-                    <span class="text-white-50 d-none d-md-inline">
-                        <i class="bi bi-person-circle me-1"></i>
-                        <span sec:authentication="principal.nickname">사용자</span>님
-                    </span>
-                    <a th:href="@{/mypage}" class="btn btn-outline-info btn-sm px-3 ms-2">
-                        <i class="bi bi-person-badge me-1"></i>마이페이지
-                    </a>
-                    
-                    <!-- 관리자 대시보드 버튼 (admin 계정 전용) -->
-                    <div th:if="${#authentication.principal.username == 'admin'}">
-                        <a th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm px-3 ms-2 text-dark fw-bold">
-                            <i class="bi bi-speedometer2 me-1"></i>관리자
+        <div class="offcanvas-lg offcanvas-end offcanvas-dark" tabindex="-1" id="navbarContent" aria-labelledby="offcanvasNavbarLabel">
+            <div class="offcanvas-body">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">
+                            <i class="bi bi-house-door me-1"></i>홈
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/recipe/recommend}">
+                            <i class="bi bi-stars me-1"></i>레시피 추천
+                        </a>
+                    </li>
+                </ul>
+                <div class="mobile-nav-actions">
+                    <div sec:authorize="isAnonymous()" class="d-flex flex-column gap-2">
+                        <a th:href="@{/auth/login}" class="btn btn-outline-light btn-sm px-3">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>로그인
+                        </a>
+                        <a th:href="@{/auth/signup}" class="btn btn-accent btn-sm px-3">
+                            <i class="bi bi-person-plus me-1"></i>회원가입
                         </a>
                     </div>
-                    
-                    <a th:href="@{/auth/logout}" class="btn btn-outline-light btn-sm px-3 ms-2">
-                        <i class="bi bi-box-arrow-right me-1"></i>로그아웃
-                    </a>
+                    <div sec:authorize="isAuthenticated()" class="d-flex flex-column gap-3">
+                        <span class="text-white-50">
+                            <i class="bi bi-person-circle me-1"></i>
+                            <span sec:authentication="principal.nickname">사용자</span>님
+                        </span>
+                        <div class="d-flex flex-column gap-2">
+                            <a th:href="@{/mypage}" class="btn btn-outline-info btn-sm px-3">
+                                <i class="bi bi-person-badge me-1"></i>마이페이지
+                            </a>
+                            <div th:if="${#authentication.principal.username == 'admin'}">
+                                <a th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm px-3 text-dark fw-bold w-100">
+                                    <i class="bi bi-speedometer2 me-1"></i>관리자
+                                </a>
+                            </div>
+                            <a th:href="@{/auth/logout}" class="btn btn-outline-light btn-sm px-3">
+                                <i class="bi bi-box-arrow-right me-1"></i>로그아웃
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -153,8 +169,11 @@
                 <p class="mb-3 text-white-75" style="font-size:.9rem; line-height:1.7; color:rgba(255,255,255,0.8);"
                    th:text="${recipe['recipe_text']}"></p>
                 <!-- 유사도 점수 바 -->
-                <div class="d-flex align-items-center gap-2">
-                    <small style="color:rgba(255,255,255,0.45);">AI 매칭도</small>
+                <div class="d-flex align-items-center gap-2 mt-2">
+                    <small style="color:rgba(255,255,255,0.45); cursor:help;" 
+                           title="선택한 주재료와 건강 목표에 이 레시피가 얼마나 부합하는지를 나타내는 AI 신뢰도 점수입니다.">
+                        AI 매칭도 <i class="bi bi-info-circle"></i>
+                    </small>
                     <div class="score-bar flex-grow-1">
                         <div class="score-fill"
                              th:style="'width:' + ${(recipe['score'] * 100)} + '%'"></div>
@@ -185,6 +204,14 @@
     window.addEventListener('scroll', () => {
         document.getElementById('mainNavbar').classList.toggle('scrolled', window.scrollY > 30);
     });
+
+    // ── 오프캔버스 햄버거 메뉴 애니메이션 ──
+    const offcanvasNavbar = document.getElementById('navbarContent');
+    const customToggler = document.querySelector('.custom-toggler');
+    if (offcanvasNavbar && customToggler) {
+        offcanvasNavbar.addEventListener('show.bs.offcanvas', () => customToggler.classList.add('open'));
+        offcanvasNavbar.addEventListener('hide.bs.offcanvas', () => customToggler.classList.remove('open'));
+    }
 </script>
 </body>
 </html>

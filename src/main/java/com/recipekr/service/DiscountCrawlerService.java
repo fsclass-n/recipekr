@@ -42,9 +42,9 @@ public class DiscountCrawlerService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private String getPythonExecutable() {
-        String condaPath = "C:\\Users\\whyei\\anaconda3\\envs\\conda_venv\\python.exe";
-        if (new java.io.File(condaPath).exists()) {
-            return condaPath;
+        String projectConda = Paths.get(System.getProperty("user.dir"), ".conda", "python.exe").toString();
+        if (new java.io.File(projectConda).exists()) {
+            return projectConda;
         }
         return "python";
     }

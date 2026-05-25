@@ -600,6 +600,102 @@
         
         /* 로고 SVG 스타일 */
         .svg-logo { width: 22px; height: 22px; }
+        /* ── 모바일 반응형 ── */
+        @media (max-width: 768px) {
+            .fridge-container {
+                perspective: none;
+                margin-top: 10px;
+                max-width: 100%;
+                padding: 0 10px;
+            }
+            .fridge-wrapper {
+                height: auto;
+                min-height: auto;
+                max-height: none;
+                transform-style: flat;
+                box-shadow: none;
+                border: none;
+                background: transparent;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                padding: 0;
+            }
+            .fridge-door {
+                position: relative;
+                width: 100%;
+                perspective: none;
+                pointer-events: auto; /* 터치 활성화 */
+            }
+            .door-inner {
+                position: relative;
+                transform: none !important;
+                transition: none !important;
+            }
+            .door-front {
+                display: none;
+            }
+            .door-back {
+                position: relative;
+                transform: none !important;
+                border-radius: 12px !important;
+                border: 2px solid #334155 !important;
+                padding: 15px !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+                background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+            }
+            .door-open-overlay { display: none !important; }
+            .home-bar { display: none !important; }
+            .door-guard-shelf { display: none !important; }
+            
+            .fridge-shelves {
+                display: contents; /* 모바일에서 shelf-side를 wrapper의 직접적인 flex 자식으로 만듦 */
+            }
+            .shelf-side {
+                max-width: 100% !important;
+                overflow: visible;
+                padding-right: 0;
+                /* 기존 fridge-shelves에 있던 디자인을 개별 카드로 이동 */
+                padding: 15px;
+                border-radius: 12px;
+                border: 2px solid #334155;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                background: linear-gradient(135deg, #1e293b, #0f172a);
+            }
+            
+            /* 모바일에서 요소 순서 재배치 (재료들 먼저, 폼 마지막) */
+            .fridge-shelves > .shelf-side:nth-child(1) { order: 1; } /* 이마트 재료 */
+            .fridge-door.left-door { order: 2; margin-bottom: 20px; } /* 홈플러스 재료 */
+            .fridge-door.right-door { order: 3; margin-bottom: 20px; } /* 롯데마트 재료 */
+            .fridge-shelves > .shelf-side:nth-child(2) { order: 4; } /* 레시피 의뢰 폼 */
+
+            .center-grid, .door-grid {
+                grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+                background: none;
+                box-shadow: none;
+                padding-bottom: 0;
+                justify-content: start;
+            }
+            .crisper-drawers { display: none; } /* 모바일에서는 장식 생략 */
+            .pocket-slot {
+                flex: none;
+            }
+            .pocket-rail { display: none; } /* 선반 레일 장식 생략 */
+
+            .ingredient-card {
+                transform: translateY(0) !important;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.15) !important;
+            }
+            .ingredient-card:hover, .pocket-slot:hover .ingredient-card {
+                transform: translateY(-5px) !important;
+            }
+            .form-area {
+                margin-bottom: 10px;
+            }
+            .ai-recommendation-banner {
+                margin-top: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -609,36 +705,51 @@
         <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
             <span class="brand-icon">🍽️</span><span class="brand-text">냉장고 레시피</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
-                <li class="nav-item"><a class="nav-link" th:href="@{/}"><i class="bi bi-house-door me-1"></i>홈</a></li>
-                <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link active" th:href="@{/recipe/recommend}"><i class="bi bi-stars me-1"></i>레시피 추천</a>
-                </li>
-            </ul>
-            <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-3">
-                <span class="text-white-50 d-none d-md-inline">
-                    <i class="bi bi-person-circle me-1"></i>
-                    <span sec:authentication="principal.nickname">사용자</span>님
-                </span>
-                <a th:href="@{/mypage}" class="btn btn-outline-info btn-sm px-3 ms-2">
-                    <i class="bi bi-person-badge me-1"></i>마이페이지
-                </a>
-                
-                <!-- 관리자 대시보드 버튼 (admin 계정 전용) -->
-                <div th:if="${#authentication.principal.username == 'admin'}">
-                    <a th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm px-3 ms-2 text-dark fw-bold">
-                        <i class="bi bi-speedometer2 me-1"></i>관리자
-                    </a>
-                </div>
-                
-                <a th:href="@{/auth/logout}" class="btn btn-outline-light btn-sm px-3 ms-2"><i class="bi bi-box-arrow-right me-1"></i>로그아웃</a>
+        <button class="navbar-toggler border-0 custom-toggler" type="button"
+                data-bs-toggle="offcanvas" data-bs-target="#navbarContent" aria-controls="navbarContent">
+            <div class="hamburger-icon">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
-            <div class="d-flex align-items-center gap-3" sec:authorize="!isAuthenticated()">
-                <a th:href="@{/auth/login}" class="btn btn-outline-light btn-sm px-3"><i class="bi bi-box-arrow-in-right me-1"></i>로그인</a>
+        </button>
+        <div class="offcanvas-lg offcanvas-end offcanvas-dark" tabindex="-1" id="navbarContent" aria-labelledby="offcanvasNavbarLabel">
+            <div class="offcanvas-body">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/}"><i class="bi bi-house-door me-1"></i>홈</a></li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link active" th:href="@{/recipe/recommend}"><i class="bi bi-stars me-1"></i>레시피 추천</a>
+                    </li>
+                </ul>
+                <div class="mobile-nav-actions">
+                    <div sec:authorize="isAnonymous()" class="d-flex flex-column gap-2">
+                        <a th:href="@{/auth/login}" class="btn btn-outline-light btn-sm px-3">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>로그인
+                        </a>
+                        <a th:href="@{/auth/signup}" class="btn btn-accent btn-sm px-3">
+                            <i class="bi bi-person-plus me-1"></i>회원가입
+                        </a>
+                    </div>
+                    <div sec:authorize="isAuthenticated()" class="d-flex flex-column gap-3">
+                        <span class="text-white-50">
+                            <i class="bi bi-person-circle me-1"></i>
+                            <span sec:authentication="principal.nickname">사용자</span>님
+                        </span>
+                        <div class="d-flex flex-column gap-2">
+                            <a th:href="@{/mypage}" class="btn btn-outline-info btn-sm px-3">
+                                <i class="bi bi-person-badge me-1"></i>마이페이지
+                            </a>
+                            <div th:if="${#authentication.principal.username == 'admin'}">
+                                <a th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm px-3 text-dark fw-bold w-100">
+                                    <i class="bi bi-speedometer2 me-1"></i>관리자
+                                </a>
+                            </div>
+                            <a th:href="@{/auth/logout}" class="btn btn-outline-light btn-sm px-3">
+                                <i class="bi bi-box-arrow-right me-1"></i>로그아웃
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -646,13 +757,26 @@
 
 <main class="py-4">
     <div class="container position-relative">
-        <div class="text-center mb-5 mt-5 pt-4">
+        <div class="text-start text-md-center mb-5 mt-5 pt-4">
             <span class="badge-brand mb-4 mt-2 d-inline-block">AI 셰프의 주방</span>
-            <h2 class="section-title text-white fs-4">오늘의 냉장고를 열어보세요!</h2>
-            <p class="section-subtitle small mb-0" style="margin-top: 18px !important; margin-bottom: 18px !important; line-height: 1.6; font-size: 0.9rem; color: #cbd5e1 !important; font-style: italic;">
-                "냉장고를 두드리면 방금 배송한 마트별 추천 식재료를 확인하실 수 있습니다.<br>
-                또한 장보기 버튼을 누르면 마트에서 방금 가져온 신선한 식재료로 재진열됩니다."
-            </p>
+            
+            <!-- 데스크탑 전용 타이틀/내용 -->
+            <div class="d-none d-md-block">
+                <h2 class="section-title text-white fs-4">오늘의 냉장고를 열어보세요!</h2>
+                <p class="section-subtitle small mb-0" style="margin-top: 18px !important; margin-bottom: 18px !important; line-height: 1.6; font-size: 0.9rem; color: #cbd5e1 !important; font-style: italic;">
+                    "냉장고를 두드리면 방금 배송한 마트별 추천 식재료를 확인하실 수 있습니다.<br>
+                    또한 장보기 버튼을 누르면 마트에서 방금 가져온 신선한 식재료로 재진열됩니다."
+                </p>
+            </div>
+
+            <!-- 모바일 전용 타이틀/내용 -->
+            <div class="d-md-none mt-2">
+                <h2 class="section-title text-white fs-4 fw-bold mb-3">오늘의 추천 식재료</h2>
+                <p class="section-subtitle small mb-0" style="line-height: 1.6; font-size: 0.95rem; color: #cbd5e1 !important;">
+                    방금 배송된 신선한 재료들입니다.<br>
+                    원하는 재료를 선택하고 레시피를 의뢰해 보세요!
+                </p>
+            </div>
         </div>
 
         <div class="fridge-container">
@@ -728,10 +852,18 @@
                                     <option value="저염식">저염식 (나트륨 최소화)</option>
                                     <option value="벌크업">벌크업 (고단백)</option>
                                 </select>
-                                <div class="d-flex justify-content-between align-items-center mt-auto gap-2" style="flex-wrap: nowrap;">
-                                    <button type="button" class="btn btn-outline-secondary btn-action px-3" onclick="resetSelection()"><i class="bi bi-arrow-counterclockwise me-1"></i>초기화</button>
-                                    <button type="button" class="btn btn-crawl btn-action" id="crawlBtn" onclick="runCrawler()"><i class="bi bi-cart3 me-2"></i>장보기</button>
-                                    <button type="submit" class="btn btn-primary btn-action px-4" id="submitBtn"><i class="bi bi-magic me-1"></i>추천 받기</button>
+                                <div class="d-flex flex-column mt-auto gap-2">
+                                    <div class="d-flex gap-2 w-100">
+                                        <button type="button" class="btn btn-outline-secondary btn-action flex-grow-1" onclick="resetSelection()">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i>초기화
+                                        </button>
+                                        <button type="button" class="btn btn-crawl btn-action flex-grow-1" id="crawlBtn" onclick="runCrawler()">
+                                            <i class="bi bi-cart3 me-2"></i>장보기
+                                        </button>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-action w-100 py-2" id="submitBtn">
+                                        <i class="bi bi-magic me-1"></i>추천 받기
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -1104,20 +1236,24 @@
         let fetchDone = false;
         let responseHtml = null;
         
-        // 프로그레스 바 균등하게 채우기
+        // 프로그레스 바 채우기
         const interval = setInterval(() => {
-            p += speed;
-            if (p >= 100) {
-                p = 100;
-                if (fetchDone) {
+            if (!fetchDone) {
+                if (p < 85) {
+                    p += speed;
+                } else if (p < 99) {
+                    p += (speed * 0.05); // 거의 멈춘 듯 천천히 증가
+                }
+            } else {
+                p += speed; // 완료 시 빠르게 100% 도달
+                if (p >= 100) {
+                    p = 100;
                     clearInterval(interval);
                     if (responseHtml) {
                         document.open();
                         document.write(responseHtml);
                         document.close();
                     }
-                } else {
-                    p = 99; // 응답 지연 시 99%에서 대기
                 }
             }
             progressBar.style.width = p + '%';
@@ -1146,6 +1282,14 @@
             updateDisplay();
         });
     });
+
+    // ── 오프캔버스 햄버거 메뉴 애니메이션 ──
+    const offcanvasNavbar = document.getElementById('navbarContent');
+    const customToggler = document.querySelector('.custom-toggler');
+    if (offcanvasNavbar && customToggler) {
+        offcanvasNavbar.addEventListener('show.bs.offcanvas', () => customToggler.classList.add('open'));
+        offcanvasNavbar.addEventListener('hide.bs.offcanvas', () => customToggler.classList.remove('open'));
+    }
 </script>
 </body>
 </html>

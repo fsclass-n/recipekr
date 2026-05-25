@@ -175,6 +175,34 @@
     .footer {
         scroll-snap-align: end;
     }
+
+    /* ── 모바일 반응형 ── */
+    @media (max-width: 768px) {
+        html { scroll-snap-type: none; }
+        .fp-section { 
+            height: auto; 
+            min-height: 100vh; 
+            padding: 100px 0 60px; 
+            scroll-snap-align: none; 
+        }
+        .hero-title {
+            font-size: 2.2rem;
+            margin-top: 20px;
+        }
+        .hero-visual { 
+            width: 100%; 
+            height: 320px; 
+            margin-top: 40px; 
+        }
+        .hero-emoji-main { font-size: 6rem; }
+        .hero-card { transform: scale(0.85); padding: 0.5rem 1rem; }
+        .hero-card-1 { top: 0; left: -10%; }
+        .hero-card-2 { top: auto; bottom: 0; right: 0; }
+        .hero-card-3 { bottom: 10%; left: 0; }
+        
+        .hero-stats { gap: 1rem; flex-wrap: wrap; }
+        .stat-divider { display: none; }
+    }
     </style>
 </head>
 <body>
@@ -186,12 +214,17 @@
             <span class="brand-icon">🍽️</span>
             <span class="brand-text">냉장고 레시피</span>
         </a>
-        <button class="navbar-toggler border-0" type="button"
-                data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
+        <button class="navbar-toggler border-0 custom-toggler" type="button"
+                data-bs-toggle="offcanvas" data-bs-target="#navbarContent" aria-controls="navbarContent">
+            <div class="hamburger-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </button>
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
+        <div class="offcanvas-lg offcanvas-end offcanvas-dark" tabindex="-1" id="navbarContent" aria-labelledby="offcanvasNavbarLabel">
+            <div class="offcanvas-body">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
                 <li class="nav-item">
                     <a class="nav-link active" href="#hero" id="nav-home">
                         <i class="bi bi-house-door me-1"></i>홈
@@ -210,8 +243,8 @@
                     </a>
                 </li>
             </ul>
-            <div class="d-flex align-items-center gap-2">
-                <div sec:authorize="isAnonymous()" class="d-flex gap-2">
+            <div class="mobile-nav-actions">
+                <div sec:authorize="isAnonymous()" class="d-flex flex-column gap-2">
                     <a th:href="@{/auth/login}" class="btn btn-outline-light btn-sm px-3">
                         <i class="bi bi-box-arrow-in-right me-1"></i>로그인
                     </a>
@@ -219,29 +252,32 @@
                         <i class="bi bi-person-plus me-1"></i>회원가입
                     </a>
                 </div>
-                <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-3">
-                    <span class="text-white-50 d-none d-md-inline">
+                <div sec:authorize="isAuthenticated()" class="d-flex flex-column gap-3">
+                    <span class="text-white-50">
                         <i class="bi bi-person-circle me-1"></i>
                         <span sec:authentication="principal.nickname">사용자</span>님
                     </span>
 
-                    <!-- 마이페이지 버튼 -->
-                    <a th:href="@{/mypage}" class="btn btn-outline-info btn-sm px-3 ms-2">
-                        <i class="bi bi-person-badge me-1"></i>마이페이지
-                    </a>
+                    <div class="d-flex flex-column gap-2">
+                        <!-- 마이페이지 버튼 -->
+                        <a th:href="@{/mypage}" class="btn btn-outline-info btn-sm px-3">
+                            <i class="bi bi-person-badge me-1"></i>마이페이지
+                        </a>
 
-                    <!-- 관리자 대시보드 버튼 (admin 계정 전용) -->
-                    <div th:if="${#authentication.principal.username == 'admin'}">
-                        <a th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm px-3 ms-2 text-dark fw-bold">
-                            <i class="bi bi-speedometer2 me-1"></i>관리자
+                        <!-- 관리자 대시보드 버튼 (admin 계정 전용) -->
+                        <div th:if="${#authentication.principal.username == 'admin'}">
+                            <a th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm px-3 text-dark fw-bold w-100">
+                                <i class="bi bi-speedometer2 me-1"></i>관리자
+                            </a>
+                        </div>
+
+                        <a th:href="@{/auth/logout}" class="btn btn-outline-light btn-sm px-3">
+                            <i class="bi bi-box-arrow-right me-1"></i>로그아웃
                         </a>
                     </div>
-
-                    <a th:href="@{/auth/logout}" class="btn btn-outline-light btn-sm px-3 ms-2">
-                        <i class="bi bi-box-arrow-right me-1"></i>로그아웃
-                    </a>
                 </div>
             </div>
+        </div>
         </div>
     </div>
 </nav>
@@ -432,6 +468,8 @@
     // ── 마우스 휠 부드러운 풀페이지 스크롤 ──
     let isScrolling = false;
     window.addEventListener('wheel', (e) => {
+        // 모바일 해상도(768px 이하)에서는 기본 스크롤 사용
+        if (window.innerWidth <= 768) return;
         // 모달이나 폼 내부 스크롤 시 예외 처리
         if (e.target.closest('.modal') || e.target.closest('form')) return;
 
@@ -477,6 +515,14 @@
             });
         });
     });
+
+    // ── 오프캔버스 햄버거 메뉴 애니메이션 ──
+    const offcanvasNavbar = document.getElementById('navbarContent');
+    const customToggler = document.querySelector('.custom-toggler');
+    if (offcanvasNavbar && customToggler) {
+        offcanvasNavbar.addEventListener('show.bs.offcanvas', () => customToggler.classList.add('open'));
+        offcanvasNavbar.addEventListener('hide.bs.offcanvas', () => customToggler.classList.remove('open'));
+    }
 </script>
 </body>
 </html>
