@@ -838,3 +838,19 @@ select.form-control-dark option {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 }
+/* 모바일 푸터 카피라이트 한 줄 표기 */
+@media (max-width: 575.98px) {
+    .footer .small {
+        font-size: 0.65rem !important;
+        letter-spacing: -0.3px;
+        white-space: nowrap;
+    }
+}
+
+/* 모바일 오프캔버스 50% 너비 적용 */
+@media (max-width: 991.98px) {
+    .offcanvas-lg.offcanvas-dark {
+        --bs-offcanvas-width: 50vw !important;
+        width: 50vw !important;
+    }
+}
