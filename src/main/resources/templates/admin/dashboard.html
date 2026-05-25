@@ -6,143 +6,16 @@
     <title>관리자 대시보드 | 냉장고 레시피</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" th:href="@{/favicon.png?v=3}">
-    <link rel="apple-touch-icon" th:href="@{/favicon.png?v=3}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+    <link rel="apple-touch-icon" th:href="@{/favicon.svg}">
     
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <!-- Global CSS -->
-    <link rel="stylesheet" th:href="@{/css/global.css}">
-    
-    <style>
-        .dashboard-container {
-            padding-top: 2rem;
-            padding-bottom: 5rem;
-        }
-        
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
-            padding: 2rem;
-            text-align: center;
-            transition: transform 0.3s ease, background 0.3s ease;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            background: -webkit-linear-gradient(45deg, #ff6b6b, #feca57);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: white;
-            margin: 0;
-            line-height: 1.2;
-        }
-        
-        .stat-label {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1rem;
-            font-weight: 500;
-            margin-top: 0.5rem;
-        }
-        
-        .chart-card {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 2rem;
-            margin-top: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        .chart-card h4 {
-            color: white;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .chart-image-container {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 1rem;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.02);
-            padding: 1rem;
-        }
-        
-        .chart-image-container img {
-            max-width: 100%;
-            height: auto;
-        }
-        
-        .error-alert {
-            background: rgba(255, 71, 87, 0.1);
-            border: 1px solid rgba(255, 71, 87, 0.3);
-            color: #ff4757;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .ranking-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .ranking-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .ranking-item:last-child {
-            border-bottom: none;
-        }
-        
-        .rank-number {
-            font-weight: 800;
-            color: #ff6b6b;
-            width: 30px;
-        }
-        
-        .rank-name {
-            flex-grow: 1;
-            color: white;
-            font-weight: 500;
-        }
-        
-        .rank-count {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.2rem 0.8rem;
-            border-radius: 1rem;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/global.css?v=4}">
+    <link rel="stylesheet" th:href="@{/css/admin.css?v=1}">
 </head>
 <body class="bg-dark text-white">
 
@@ -158,7 +31,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <ul class="navbar-nav desktop-nav-pill me-auto mb-2 mb-lg-0 gap-2">
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/}">
                         <i class="bi bi-house-door me-1"></i>홈
