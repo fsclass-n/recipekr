@@ -111,10 +111,8 @@ main {
     top: 0;
     left: 0;
     width: 100%;
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
+    border-bottom: 1px solid transparent;
     height: var(--navbar-height);
     padding-left: 24px;
     padding-right: 24px;
