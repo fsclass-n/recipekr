@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recipekr-app
+    ports:
+      - "80:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-tidb}
+      - TIDB_URL=${TIDB_URL}
+      - TIDB_USERNAME=${TIDB_USERNAME}
+      - TIDB_PASSWORD=${TIDB_PASSWORD}
+      - RDS_URL=${RDS_URL}
+      - RDS_USERNAME=${RDS_USERNAME}
+      - RDS_PASSWORD=${RDS_PASSWORD}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - JAVA_OPTS=${JAVA_OPTS:- -Xms128m -Xmx256m}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+    restart: always

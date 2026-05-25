@@ -39,5 +39,6 @@ COPY --from=build /app/build/libs/*.jar app.jar
 ENV PORT=8080
 EXPOSE $PORT
 
-# Spring Boot 실행 명령어 (Render Free 512MB RAM 제약을 위해 Java 힙 메모리 최적화)
-ENTRYPOINT ["sh", "-c", "java -Xms128m -Xmx256m -Dserver.port=${PORT} -jar app.jar"]
+# Spring Boot 실행 명령어 (JAVA_OPTS를 통해 외부에서 JVM 옵션을 동적으로 조절 가능하도록 수정)
+ENV JAVA_OPTS="-Xms128m -Xmx256m"
+ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -Dserver.port=${PORT} -jar app.jar"]
