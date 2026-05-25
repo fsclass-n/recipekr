@@ -108,36 +108,34 @@ sudo usermod -aG docker ubuntu
 
 ## 4. 최종 배포 기동 및 검증
 
-### [ ] 1) 코드 복제 및 설정 작성
-```bash
-git clone https://github.com/[깃허브아이디]/recipekr.git
-cd recipekr
+이제 수정한 코드를 로컬 컴퓨터에서 커밋하고 `git push origin main` 하시면 깃허브 액션이 아래 작업을 **완전 자동으로** 처리해 줍니다.
 
-# .env 설정 파일 구성
-cp .env.example .env
-nano .env
+### [ ] 1) 깃허브 액션 자동 배포 트리거
+로컬 프로젝트 루트 폴더에서 터미널을 열고 푸시를 진행합니다.
+```bash
+git add .
+git commit -m "deploy: CI/CD 배포 파이프라인 및 TiDB 기본 설정 적용"
+git push origin main
 ```
-`nano` 편집기가 실행되면 설정을 확인합니다. 기본값으로 이미 기존에 사용하던 TiDB 및 제미나이 API 키 정보가 주입되어 있으므로 별도 편집 없이 바로 저장(`Ctrl+O` -> `Enter` -> `Ctrl+X`)하셔도 무방합니다.
-- `SPRING_PROFILES_ACTIVE=tidb` (기본값으로 설정되어 바로 TiDB로 구동됩니다. 추후 RDS 설정 시 rds로 변경)
-- `TIDB_URL=jdbc:mysql://gateway01.ap-northeast-1.prod.aws.tidbcloud.com:4000/recipekr?useSSL=true&serverTimezone=Asia/Seoul`
-- `TIDB_USERNAME=2tKL7PvWWp5JakF.root`
-- `TIDB_PASSWORD=inZWb4Ps6xN5siFn`
-- `GEMINI_API_KEY=AIzaSyDZMsxz57xvwrX2v5SDzSNEm_lW65fsIUk`
+- **자동 진행되는 작업**:
+  1. GitHub Actions가 코드를 체크아웃하고 Docker 이미지를 Docker Hub에 빌드/업로드합니다.
+  2. **`scp-action`**을 통해 EC2 서버의 `/home/ubuntu/recipekr` 폴더를 자동으로 생성하고 `docker-compose.yml` 및 `.env.example` 파일을 전송합니다.
+  3. EC2 서버에서 `.env` 파일이 없다면 자동 복사 생성합니다. (TiDB 접속 정보 자동 주입 완료)
+  4. Docker Hub에서 최신 빌드 이미지를 다운로드받고 구동합니다.
 
-### [ ] 2) RDS 초기 테이블 생성
-로컬 SQL 클라이언트 툴(DBeaver 등)이나 EC2에 mysql 클라이언트를 깔아 복사한 RDS 데이터베이스에 접속한 뒤, 아래 두 파일의 DDL 쿼리를 순서대로 실행해 줍니다.
-1. `src/main/resources/sql/schema.sql`
-2. `src/main/resources/sql/discount_schema.sql`
+### [ ] 2) 배포 진행 상황 확인
+깃허브 저장소의 **Actions** 탭에서 **Deploy to AWS EC2 via Docker Hub** 워크플로우가 초록색 체크(`Success`)로 완료되는지 확인합니다.
 
-### [ ] 3) Docker Compose 기동 및 서비스 동작 검증
+### [ ] 3) EC2 서버에서 동작 상태 및 로그 확인
+배포가 완료되면 EC2 터미널에 접속하여 컨테이너가 정상적으로 실행 중인지 점검합니다.
 ```bash
-# 백그라운드로 빌드 및 컨테이너 가동
-docker-compose up -d --build
-
-# 실행 로그 체크
+cd /home/ubuntu/recipekr
+docker ps
 docker-compose logs -f app
 ```
-성공적으로 기동되면 브라우저에서 `http://[EC2_퍼블릭_IP]`로 접속하여 회원가입, 로그인, 마이페이지 기능이 TiDB/RDS와 잘 맞물려 동작하는지 검증합니다.
+- 성공적으로 기동되면 브라우저에서 `http://[EC2_퍼블릭_IP]` (예: `http://54.180.109.107`)로 접속하여 회원가입, 로그인, 마이페이지 기능이 TiDB 클라우드와 맞물려 정상 동작하는지 확인합니다.
+
+---
 
 ---
 
