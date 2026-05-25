@@ -79,8 +79,6 @@ public class GeminiChatService {
             return "API 키가 설정되지 않았습니다. 관리자에게 문의하세요.";
         }
 
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + apiKey;
-
         try {
             // 요청 바디 생성 (Gemini API 형식에 맞게)
             List<Map<String, Object>> contents = new ArrayList<>();
@@ -120,10 +118,29 @@ public class GeminiChatService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
-            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+            String[] models = {"gemini-2.5-flash", "gemini-1.5-flash", "gemini-pro"};
+            String responseBody = null;
+            Exception lastException = null;
+
+            for (String modelName : models) {
+                String url = "https://generativelanguage.googleapis.com/v1beta/models/" + modelName + ":generateContent?key=" + apiKey;
+                try {
+                    ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+                    responseBody = response.getBody();
+                    log.info("Gemini 챗봇 응답 성공 (model: {})", modelName);
+                    break;
+                } catch (Exception e) {
+                    lastException = e;
+                    log.warn("Gemini model {} 호출 실패: {}", modelName, e.getMessage());
+                }
+            }
+
+            if (responseBody == null) {
+                throw new RuntimeException("모든 Gemini 모델 호출에 실패했습니다. 마지막 오류: " + (lastException != null ? lastException.getMessage() : ""));
+            }
 
             // 응답 파싱
-            JsonNode rootNode = objectMapper.readTree(response.getBody());
+            JsonNode rootNode = objectMapper.readTree(responseBody);
             JsonNode candidates = rootNode.path("candidates");
             if (candidates.isArray() && !candidates.isEmpty()) {
                 JsonNode parts = candidates.get(0).path("content").path("parts");

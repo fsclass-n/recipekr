@@ -69,6 +69,12 @@ def get_db_config() -> dict:
             database = m.group(3)
             
     # JDBC URL 파라미터 분리 (예: ?useSSL=false 등)
+    ssl_disabled = False
+    if "useSSL=false" in db_url.lower():
+        ssl_disabled = True
+    elif "usessl=true" in db_url.lower():
+        ssl_disabled = False
+
     database = database.split("?")[0]
             
     return {
@@ -77,7 +83,7 @@ def get_db_config() -> dict:
         "database": database,
         "user": os.environ.get("RDS_USERNAME", os.environ.get("TIDB_USERNAME", "root")),
         "password": os.environ.get("RDS_PASSWORD", os.environ.get("TIDB_PASSWORD", "")),
-        "ssl_disabled": False,
+        "ssl_disabled": ssl_disabled,
         "charset": "utf8mb4",
         "use_pure": True,
         "connection_timeout": 15,

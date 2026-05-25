@@ -101,6 +101,20 @@ public class DiscountCrawlerService {
             if (tidbUser != null) pb.environment().put("TIDB_USERNAME", tidbUser);
             if (tidbPass != null) pb.environment().put("TIDB_PASSWORD", tidbPass);
 
+            String rdsUrl = System.getenv("RDS_URL");
+            String rdsUser = System.getenv("RDS_USERNAME");
+            String rdsPass = System.getenv("RDS_PASSWORD");
+            if (rdsUrl != null) pb.environment().put("RDS_URL", rdsUrl);
+            if (rdsUser != null) pb.environment().put("RDS_USERNAME", rdsUser);
+            if (rdsPass != null) pb.environment().put("RDS_PASSWORD", rdsPass);
+
+            // 호환성을 위해 RDS 환경 변수가 있고 TiDB 환경 변수가 없는 경우 TiDB 변수에도 RDS 값을 넣어 줍니다.
+            if (rdsUrl != null) {
+                if (pb.environment().get("TIDB_URL") == null) pb.environment().put("TIDB_URL", rdsUrl);
+                if (pb.environment().get("TIDB_USERNAME") == null) pb.environment().put("TIDB_USERNAME", rdsUser);
+                if (pb.environment().get("TIDB_PASSWORD") == null) pb.environment().put("TIDB_PASSWORD", rdsPass);
+            }
+
             // 크롤러 스크립트가 있는 디렉토리를 작업 디렉토리로 설정
             pb.directory(scriptPath.getParent().toFile());
 

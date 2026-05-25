@@ -36,8 +36,6 @@ def generate_recipes(ingredients: str, health_type: str, top_n: int) -> dict:
     genai.configure(api_key=api_key)
     
     # JSON 스키마를 강제하기 위해 generation_config 사용
-    model = genai.GenerativeModel("gemini-1.5-flash-latest")
-    
     prompt = f"""
 당신은 최고의 창의적인 요리사입니다. 사용자가 선택한 다음 재료를 **주재료로 반드시 활용하여** {top_n}가지의 새롭고 맛있는 레시피를 창작해 주세요.
 
@@ -61,28 +59,38 @@ def generate_recipes(ingredients: str, health_type: str, top_n: int) -> dict:
   "ai_message": "전체 요리에 대한 셰프의 친절하고 센스있는 한 줄 조언 평 (마크다운 없이 평문)"
 }}
 """
-    try:
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = model.generate_content(
-                    prompt,
-                    generation_config=genai.GenerationConfig(
-                        response_mime_type="application/json"
+    # JSON 스키마를 강제하기 위해 generation_config 사용
+    models_to_try = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-pro"]
+    last_error = None
+    
+    for model_name in models_to_try:
+        try:
+            model = genai.GenerativeModel(model_name)
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    response = model.generate_content(
+                        prompt,
+                        generation_config=genai.GenerationConfig(
+                            response_mime_type="application/json"
+                        )
                     )
-                )
-                # JSON 파싱
-                result_json = json.loads(response.text)
-                return result_json
-            except Exception as inner_e:
-                error_msg = str(inner_e)
-                if "429" in error_msg or "Quota" in error_msg:
-                    if attempt < max_retries - 1:
-                        time.sleep(15)  # 15초 대기 후 재시도
-                        continue
-                raise inner_e
-    except Exception as e:
-        raise RuntimeError(f"AI 레시피 창작 중 오류가 발생했습니다: {str(e)}")
+                    # JSON 파싱
+                    result_json = json.loads(response.text)
+                    return result_json
+                except Exception as inner_e:
+                    error_msg = str(inner_e)
+                    if "429" in error_msg or "Quota" in error_msg:
+                        if attempt < max_retries - 1:
+                            time.sleep(15)  # 15초 대기 후 재시도
+                            continue
+                    raise inner_e
+        except Exception as e:
+            last_error = e
+            print(f"Model {model_name} failed: {e}", file=sys.stderr)
+            continue
+            
+    raise RuntimeError(f"모든 AI 모델 호출에 실패했습니다. 마지막 오류: {str(last_error)}")
 
 def main():
     parser = argparse.ArgumentParser(description="제미나이 기반 맞춤형 레시피 창작 엔진")
