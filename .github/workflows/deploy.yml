@@ -42,7 +42,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
-          source: "docker-compose.yml,.env.example"
+          source: "docker-compose.yml"
           target: "/home/ubuntu/recipekr"
           overwrite: true
 
@@ -57,16 +57,14 @@ jobs:
             # 1. 전송받은 폴더로 이동
             cd /home/ubuntu/recipekr
             
-            # scp-action은 source 경로 구조를 유지하여 전송할 수 있으므로, 파일들이 recipekr/ 안에 오도록 맞춰줍니다.
-            # 만약 복사된 파일 경로가 중첩되었다면 최상위로 올립니다.
-            if [ -d "docker-compose.yml" ]; then
-              echo "Error: docker-compose.yml is a directory"
-            fi
-            
-            # 2. .env 파일이 존재하지 않는다면 .env.example 복사해서 생성 (최초 1회 자동 생성)
-            if [ ! -f .env ]; then
-              cp .env.example .env
-            fi
+            # 2. GitHub Secrets 정보를 활용하여 .env 파일을 매 배포마다 안전하게 재생성 (보안 최적화)
+            echo "SPRING_PROFILES_ACTIVE=tidb" > .env
+            echo "JAVA_OPTS=-Xms128m -Xmx256m" >> .env
+            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
+            echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+            echo "TIDB_URL=${{ secrets.TIDB_URL }}" >> .env
+            echo "TIDB_USERNAME=${{ secrets.TIDB_USERNAME }}" >> .env
+            echo "TIDB_PASSWORD=${{ secrets.TIDB_PASSWORD }}" >> .env
             
             # 3. Docker Hub 로그인 (최신 이미지 pull 권한 확보)
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin

@@ -110,18 +110,24 @@ sudo usermod -aG docker ubuntu
 
 이제 수정한 코드를 로컬 컴퓨터에서 커밋하고 `git push origin main` 하시면 깃허브 액션이 아래 작업을 **완전 자동으로** 처리해 줍니다.
 
+### ⚠️ 중요 보안 주의 사항: API Key 유출 및 차단 문제 해결
+- **유출 감지 및 자동 차단**: 이전에 코드 설정에 포함되었던 제미나이 API 키가 깃허브로 푸시되면서 구글 보안 시스템에 의해 **유출(Leaked)로 감지되어 자동으로 비활성화(403 차단)** 되었습니다. (이 때문에 두 번째 추천부터 실패한 것입니다.)
+- **보안 조치 완료**: 코드에서 모든 하드코딩된 API 키와 DB 접속 정보를 원천 제거하고 placeholder(`[YOUR_GEMINI_API_KEY]` 등)로 교체했습니다.
+- **다이내믹 주입 연동**: 대신, 배포 스크립트([deploy.yml](file:///d:/git/202605/recipekr/.github/workflows/deploy.yml))에서 **이미 사용자가 깃허브 시크릿에 안전하게 등록해 두신 `TIDB_URL`, `TIDB_USERNAME`, `TIDB_PASSWORD`, `GEMINI_API_KEY` 값들을 배포 시점에 자동으로 EC2 내부 `.env` 파일에 생성/주입**하도록 극적으로 개선했습니다.
+- **조치 사항**: 이미 기존 API 키는 구글에 의해 무효화되었으므로, **[구글 AI 스튜디오](https://aistudio.google.com/)에서 새로운 API 키를 새로 생성**하신 뒤, **GitHub Repository Settings ➔ Secrets ➔ Actions의 `GEMINI_API_KEY` 값만 새 키로 갱신**해 주세요.
+
 ### [ ] 1) 깃허브 액션 자동 배포 트리거
-로컬 프로젝트 루트 폴더에서 터미널을 열고 푸시를 진행합니다.
+로컬 프로젝트 루트 폴더에서 터미널을 열고 푸시를 진행합니다. (새로운 API 키로 깃허브 시크릿을 갱신한 이후 푸시를 진행하시는 것을 권장합니다.)
 ```bash
 git add .
-git commit -m "deploy: CI/CD 배포 파이프라인 및 TiDB 기본 설정 적용"
+git commit -m "deploy: API 키 유출 방지 조치 및 깃허브 시크릿 동적 바인딩 배포 개선"
 git push origin main
 ```
 - **자동 진행되는 작업**:
   1. GitHub Actions가 코드를 체크아웃하고 Docker 이미지를 Docker Hub에 빌드/업로드합니다.
-  2. **`scp-action`**을 통해 EC2 서버의 `/home/ubuntu/recipekr` 폴더를 자동으로 생성하고 `docker-compose.yml` 및 `.env.example` 파일을 전송합니다.
-  3. EC2 서버에서 `.env` 파일이 없다면 자동 복사 생성합니다. (TiDB 접속 정보 자동 주입 완료)
-  4. Docker Hub에서 최신 빌드 이미지를 다운로드받고 구동합니다.
+  2. **`scp-action`**을 통해 EC2 서버의 `/home/ubuntu/recipekr` 폴더를 자동으로 생성하고 `docker-compose.yml`을 전송합니다.
+  3. GitHub Secrets에 저장된 정보를 기반으로 EC2 내부 `/home/ubuntu/recipekr/.env` 파일을 **보안 침해 우려 없이 동적으로 자동 생성**합니다. (새로 갱신한 제미나이 키와 TiDB 정보가 알아서 들어갑니다.)
+  4. Docker Hub에서 최신 빌드 이미지를 다운로드받고 무중단 기동합니다.
 
 ### [ ] 2) 배포 진행 상황 확인
 깃허브 저장소의 **Actions** 탭에서 **Deploy to AWS EC2 via Docker Hub** 워크플로우가 초록색 체크(`Success`)로 완료되는지 확인합니다.
