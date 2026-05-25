@@ -85,7 +85,9 @@ async def crawl_emart(page: Page) -> list[dict]:
                 if not text:
                     continue
                 
-                if "SSG ONLY" in text.upper():
+                # SSG ONLY 또는 SSG온리 상품 제외 (공백 무시 매칭)
+                normalized_text = re.sub(r'\s+', '', text.upper())
+                if "SSGONLY" in normalized_text or "SSG온리" in normalized_text:
                     continue
 
                 # 줄 단위로 분리 후 상품명 추출

@@ -92,6 +92,10 @@ def clean_product_name(name: str) -> str:
     예3: "4.7 / 37,316"              → ""  (별점/리뷰만 있으면 빈 문자열)
     """
     n = name.strip()
+    # SSG ONLY 브랜드명 제거
+    n = re.sub(r'(?i)\bSSG\s*ONLY\b', '', n).strip()
+    n = re.sub(r'(?i)\bSSG\s*온리\b', '', n).strip()
+    
     # 화면낭독기용 텍스트 및 원산지/브랜드 괄호 제거
     n = n.replace("할인율,", "")
     n = re.sub(r'\[.*?\]', '', n)
