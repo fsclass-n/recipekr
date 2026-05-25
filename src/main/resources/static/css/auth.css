@@ -86,6 +86,7 @@
     flex: 1;
     justify-content: center; /* 가운데 정렬 */
     align-items: stretch;
+    padding-top: var(--navbar-height, 80px); /* 헤더 가림 방지 */
 }
 
 /* ── 왼쪽: 브랜딩 패널 ── */
