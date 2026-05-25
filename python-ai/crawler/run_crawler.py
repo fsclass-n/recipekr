@@ -56,20 +56,27 @@ def get_db_config() -> dict:
     import re
     from dotenv import load_dotenv
     load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
-    tidb_url = os.environ.get("TIDB_URL", "")
-    host, port, database = "localhost", 4000, "recipekr"
-    if tidb_url:
-        m = re.search(r"(?:jdbc:)?mysql://([^:/]+):?(\d+)?/([^?]+)", tidb_url)
+    
+    # 기본적으로 RDS_URL을 우선 읽어오고 없으면 예외 처리 또는 로컬호스트
+    db_url = os.environ.get("RDS_URL", os.environ.get("TIDB_URL", ""))
+    
+    host, port, database = "localhost", 3306, "recipekrrds"
+    if db_url:
+        m = re.search(r"(?:jdbc:)?mysql://([^:/]+):?(\d+)?/([^?]+)", db_url)
         if m:
             host = m.group(1)
             port = int(m.group(2)) if m.group(2) else 3306
             database = m.group(3)
+            
+    # JDBC URL 파라미터 분리 (예: ?useSSL=false 등)
+    database = database.split("?")[0]
+            
     return {
         "host": host,
         "port": port,
         "database": database,
-        "user": os.environ.get("TIDB_USERNAME", "root"),
-        "password": os.environ.get("TIDB_PASSWORD", ""),
+        "user": os.environ.get("RDS_USERNAME", os.environ.get("TIDB_USERNAME", "root")),
+        "password": os.environ.get("RDS_PASSWORD", os.environ.get("TIDB_PASSWORD", "")),
         "ssl_disabled": False,
         "charset": "utf8mb4",
         "use_pure": True,
