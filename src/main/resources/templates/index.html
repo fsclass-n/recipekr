@@ -25,6 +25,7 @@
     html { 
         scroll-behavior: smooth; 
         scroll-snap-type: y mandatory;
+        scroll-padding-top: var(--nav-h); /* 스냅 시 고정 헤더 영역(4rem)을 고려하여 여백 확보 */
     }
 
     /* 각 섹션이 뷰포트 전체를 차지 */
@@ -178,16 +179,32 @@
 
     /* ── 모바일 반응형 ── */
     @media (max-width: 768px) {
-        html { scroll-snap-type: none; }
+        html { scroll-snap-type: y mandatory; } /* 풀페이지 스크롤 다시 활성화 */
         .fp-section { 
             height: auto; 
-            min-height: 100vh; 
-            padding: 100px 0 60px; 
-            scroll-snap-align: none; 
+            min-height: 100vh; /* 100vh 최소 보장 */
+            padding: 48px 0 20px; 
+            scroll-snap-align: start; /* 풀페이지 스냅 활성화 */
+            align-items: flex-start; 
+        }
+        #hero {
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        #hero .container {
+            margin-bottom: 36px; /* 서비스 특징 보기 위에 36px 최소 여백 확보 */
+        }
+        .scroll-hint {
+            position: relative; 
+            left: auto;
+            transform: none; /* 가로 중앙 정렬을 위해 기존 translateX 해제 */
+            margin-top: auto; /* 풀페이지 화면 하단으로 밀어냄 */
+            margin-bottom: 20px;
         }
         .hero-title {
             font-size: 2.2rem;
-            margin-top: 20px;
+            margin-top: 10px;
         }
         .hero-visual { 
             width: 100%; 
@@ -309,7 +326,7 @@
                 </h1>
                 <!-- 서브카피 -->
                 <p class="hero-subtitle animate-fade-in-up delay-200">
-                    남은 식재료를 입력하면 AI가 최적의 레시피를 추천해 드려요.<br>
+                    남은 식재료로 AI가 최적의 레시피를 찾아드려요.<br>
                     <strong style="color: var(--color-secondary)">오늘의 마트 할인 재료</strong>까지 반영한 스마트한 추천!
                 </p>
                 <!-- CTA -->
