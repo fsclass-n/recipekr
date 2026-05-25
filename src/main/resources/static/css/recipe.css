@@ -719,13 +719,4 @@ html, body {
             .badge-health, .badge-cal { font-size: 0.75rem; padding: 2px 8px; }
             .badge-rank { width: 30px; height: 30px; font-size: 0.9rem; }
         }
-
-/* 내비게이션 활성 둥근 사각형 음영 제거 오버라이드 */
-@media (min-width: 992px) {
-    .desktop-nav-pill .nav-link.active {
-        background: transparent !important;
-        border: 1px solid transparent !important;
-        color: #ffffff !important;
-        box-shadow: none !important;
-    }
-}
+

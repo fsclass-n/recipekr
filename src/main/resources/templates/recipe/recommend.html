@@ -13,17 +13,7 @@
     <link rel="stylesheet" th:href="@{/css/global.css?v=13}">
     <link rel="stylesheet" th:href="@{/css/recipe.css?v=2}">
     <link rel="stylesheet" th:href="@{/css/chatbot.css?v=1}">
-    <style>
-        /* 내비게이션 활성 둥근 사각형 음영 강제 제거 */
-        @media (min-width: 992px) {
-            .desktop-nav-pill .nav-link.active {
-                background: transparent !important;
-                border: 1px solid transparent !important;
-                color: #ffffff !important;
-                box-shadow: none !important;
-            }
-        }
-    </style>
+
 </head>
 <body>
 
@@ -45,7 +35,7 @@
                 <ul class="navbar-nav desktop-nav-pill me-auto mb-2 mb-lg-0 gap-2">
                     <li class="nav-item"><a class="nav-link" th:href="@{/}"><i class="bi bi-house-door me-1"></i>홈</a></li>
                     <li class="nav-item" sec:authorize="isAuthenticated()">
-                        <a class="nav-link active" th:href="@{/recipe/recommend}"><i class="bi bi-stars me-1"></i>레시피 추천</a>
+                        <a class="nav-link" th:href="@{/recipe/recommend}"><i class="bi bi-stars me-1"></i>레시피 추천</a>
                     </li>
                 </ul>
                 <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 mt-3 mt-lg-0 mobile-nav-actions">
