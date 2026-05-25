@@ -14,19 +14,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/global.css?v=9}">
+    <link rel="stylesheet" th:href="@{/css/global.css?v=10}">
 
-    <link rel="stylesheet" th:href="@{/css/index.css?v=1}">
+    <link rel="stylesheet" th:href="@{/css/index.css?v=2}">
 
     <style>
         /* 강제로 투명화 및 너비 축소 */
-        .desktop-nav-pill {
-            background: transparent !important;
-            background-color: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
-            width: max-content !important;
-            max-width: max-content !important;
+        @media (min-width: 992px) {
+            .desktop-nav-pill {
+                background: transparent !important;
+                background-color: transparent !important;
+                box-shadow: none !important;
+                border: none !important;
+                width: max-content !important;
+                max-width: max-content !important;
+            }
         }
         .offcanvas-dark {
             background: transparent !important;
@@ -38,7 +40,13 @@
                 background: transparent !important;
             }
         }
-    </style>
+    
+        @media (max-width: 768px) {
+            .scroll-hint {
+                margin-top: 36px !important;
+            }
+        }
+</style>
 </head>
 <body>
 
@@ -58,7 +66,7 @@
             </div>
         </button>
         <div class="offcanvas-lg offcanvas-end offcanvas-dark flex-grow-1" tabindex="-1" id="navbarContent" aria-labelledby="offcanvasNavbarLabel">
-            <div class="offcanvas-body d-flex flex-column flex-lg-row align-items-lg-center justify-content-between w-100">
+            <div class="offcanvas-body d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between w-100">
                 <ul class="navbar-nav desktop-nav-pill me-auto mb-2 mb-lg-0 gap-2">
                 <li class="nav-item">
                     <a class="nav-link active" href="#hero" id="nav-home">
@@ -143,9 +151,8 @@
                     <span class="brand-gradient-text">오늘 뭐 먹지?</span>
                 </h1>
                 <!-- 서브카피 -->
-                <p class="hero-subtitle animate-fade-in-up delay-200">
-                    남은 식재료로 AI가 최적의 레시피를 찾아드려요.<br>
-                    <strong style="color: var(--color-secondary)">오늘의 마트 할인 재료</strong>까지 반영한 스마트한 추천!
+                <p class="hero-subtitle animate-fade-in-up delay-200" style="word-break: keep-all;">
+                    남은 식재료로 AI가 최적의 레시피를 찾아드려요. <strong style="color: var(--color-secondary)">오늘의 마트 할인 재료</strong>까지 반영한 스마트한 추천!
                 </p>
                 <!-- CTA -->
                 <div class="hero-cta animate-fade-in-up delay-300">
@@ -219,7 +226,7 @@
         <div class="text-center mb-5 animate-fade-in-up">
             <span class="badge-brand mb-3 d-inline-block">서비스 특징</span>
             <h2 class="section-title">왜 냉장고 레시피인가요?</h2>
-            <p class="section-subtitle">AI와 실시간 데이터로 매일 새로운 레시피를 경험하세요</p>
+            <p class="section-subtitle" style="word-break: keep-all;">냉장고 속 남은 재료와 실시간 할인 정보를 바탕으로, AI가 매일 새롭고 맛있는 맞춤형 레시피를 추천해 드립니다.</p>
         </div>
 
         <div class="row g-4 animate-fade-in-up delay-100">

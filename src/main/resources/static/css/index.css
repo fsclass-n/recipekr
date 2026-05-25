@@ -176,13 +176,13 @@ html {
     }
     #hero .container {
         margin-top: 0;
-        margin-bottom: 36px; /* 서비스 특징 보기 위에 36px 최소 여백 확보 */
+        margin-bottom: 0;
     }
     .scroll-hint {
         position: relative; 
         left: auto;
         transform: none; /* 가로 중앙 정렬을 위해 기존 translateX 해제 */
-        margin-top: auto; /* 풀페이지 화면 하단으로 밀어냄 */
+        margin-top: 36px !important; /* 강제 36px 여백 */
         margin-bottom: 20px;
     }
     .hero-title {

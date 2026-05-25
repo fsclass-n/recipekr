@@ -790,6 +790,9 @@ select.form-control-dark option {
     .mobile-nav-actions .btn {
         width: 100%;
         justify-content: center;
+        padding-top: 0.7rem;
+        padding-bottom: 0.7rem;
+        font-size: 0.95rem;
     }
 }
 
