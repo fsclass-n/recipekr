@@ -1,4 +1,4 @@
-﻿spring:
+spring:
   profiles:
     active: tidb
 
@@ -29,7 +29,7 @@ server:
 
 logging:
   charset:
-    console: UTF-8
+    console: MS949
     file: UTF-8
   level:
     com.recipekr: DEBUG
