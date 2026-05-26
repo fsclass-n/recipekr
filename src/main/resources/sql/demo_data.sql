@@ -1,6 +1,7 @@
 INSERT INTO users (username, password, email, nickname, role)
 VALUES
     ('demo', '$2a$10$N4jMhFR9XiJWwPVhp0hQzuP0E6GFNhJoJEf9yk9P2PKJB1NsBN/qO', 'demo@recipekr.local', 'Demo User', 'USER'),
+    ('test', '$2a$10$2qz22fvERlwiT8Ygnwi1A.LN0DpwAUQJ98vf5LJf5X21.OmY10m6y', 'test@recipekr.local', 'Test User', 'ADMIN'),
     ('admin', '$2a$10$N4jMhFR9XiJWwPVhp0hQzuP0E6GFNhJoJEf9yk9P2PKJB1NsBN/qO', 'admin@recipekr.local', 'Admin', 'ADMIN');
 
 INSERT INTO recipes (title, ingredients, calories, health_type, recipe_text, username)

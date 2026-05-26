@@ -71,6 +71,7 @@ public class SecurityConfig {
                     new AntPathRequestMatcher("/favicon.ico"),
                     new AntPathRequestMatcher("/error")
                 ).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
                 // 그 외 모든 요청은 로그인 필요 (레시피 추천 포함)
                 .anyRequest().authenticated()
             )

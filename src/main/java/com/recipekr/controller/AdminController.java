@@ -8,6 +8,7 @@ import com.recipekr.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,8 +45,8 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     public String dashboard(Authentication authentication, Model model) {
-        // "admin" 아이디가 아니면 접근 거부 (홈으로 리다이렉트)
-        if (authentication == null || !"admin".equals(authentication.getName())) {
+        // ADMIN role is required to view the dashboard.
+        if (authentication == null || !hasAdminRole(authentication)) {
             return "redirect:/";
         }
 
@@ -145,5 +146,11 @@ public class AdminController {
         }
 
         return "admin/dashboard";
+    }
+
+    private boolean hasAdminRole(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch("ROLE_ADMIN"::equals);
     }
 }

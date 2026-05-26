@@ -35,7 +35,8 @@ echo.
 echo Starting RecipeKR demo mode.
 echo Demo mode uses temporary H2 data and does not call TiDB, Gemini, or RPA.
 echo Open http://localhost:8080 after the server starts.
-echo Demo login: demo / Admin1234!
+echo Demo admin login: test / 1234
+echo Admin login: admin / Admin1234!
 echo.
 
 call ".\gradlew.bat" bootRun --console=plain --args="--spring.profiles.active=demo"
