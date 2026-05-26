@@ -111,8 +111,8 @@ main {
     top: 0;
     left: 0;
     width: 100%;
-    background: rgba(10, 15, 30, 0.97);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    background: transparent;
+    border-bottom: none;
     height: var(--navbar-height);
     padding-left: 24px;
     padding-right: 24px;
@@ -150,11 +150,12 @@ main {
     border-radius: var(--radius-md);
     transition: color var(--transition-fast), background var(--transition-fast);
     font-size: var(--font-size-sm);
+    background: transparent !important;
 }
 
 .navbar-nav .nav-link:hover {
     color: var(--color-white) !important;
-    background: rgba(255, 255, 255, 0.08);
+    background: transparent !important;
 }
 
 .navbar-nav .nav-link.active {
@@ -866,4 +867,17 @@ select.form-control-dark option {
 /* ── 18. Tossface Emoji Override ── */
 .brand-icon, .hero-emoji-main, .hero-card-icon, .feature-card-icon {
     font-family: 'Tossface', sans-serif !important;
+}
+
+.brand-icon img, .hero-emoji-main img, .hero-card-icon img, .feature-card-icon img {
+    height: 1em;
+    width: 1em;
+    vertical-align: -0.1em;
+}
+
+/* Force transparent for all desktop pills */
+.desktop-nav-pill .nav-link,
+.desktop-nav-pill .nav-link:hover,
+.desktop-nav-pill .nav-link.active {
+    background: transparent !important;
 }
