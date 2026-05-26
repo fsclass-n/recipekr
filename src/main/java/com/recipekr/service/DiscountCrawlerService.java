@@ -6,6 +6,7 @@ import com.recipekr.domain.DiscountItem;
 import com.recipekr.repository.DiscountItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -39,7 +40,12 @@ import java.util.Map;
 public class DiscountCrawlerService {
 
     private final DiscountItemRepository discountItemRepository;
+    private final Environment environment;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private boolean isDemoMode() {
+        return java.util.Arrays.asList(environment.getActiveProfiles()).contains("demo");
+    }
 
     private String getPythonExecutable() {
         String projectConda = Paths.get(System.getProperty("user.dir"), ".conda", "python.exe").toString();
@@ -75,6 +81,10 @@ public class DiscountCrawlerService {
      * @return 성공 여부
      */
     public boolean runAll() {
+        if (isDemoMode()) {
+            log.info("[Crawler] Demo mode: skipping real RPA crawl and using seeded sample discount data.");
+            return true;
+        }
         return runMarket("all");
     }
 
@@ -85,6 +95,11 @@ public class DiscountCrawlerService {
      * @return 성공 여부
      */
     public boolean runMarket(String market) {
+        if (isDemoMode()) {
+            log.info("[Crawler] Demo mode: skipping real RPA crawl for market={}", market);
+            return true;
+        }
+
         Path scriptPath = getCrawlerScript();
         log.info("[크롤러] Python 크롤러 실행 시작: market={}, script={}", market, scriptPath);
 

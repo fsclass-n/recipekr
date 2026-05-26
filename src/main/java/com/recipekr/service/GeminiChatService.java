@@ -3,6 +3,7 @@ package com.recipekr.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -14,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +30,16 @@ public class GeminiChatService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Environment environment;
     private String apiKeyCache = null;
+
+    public GeminiChatService(Environment environment) {
+        this.environment = environment;
+    }
+
+    private boolean isDemoMode() {
+        return Arrays.asList(environment.getActiveProfiles()).contains("demo");
+    }
 
     private String getApiKey() {
         if (apiKeyCache != null) return apiKeyCache;
@@ -74,6 +85,10 @@ public class GeminiChatService {
      * @return AI 응답 텍스트
      */
     public String chat(List<Map<String, String>> history, String message) {
+        if (isDemoMode()) {
+            return "Demo mode response: I can help you explore the RecipeKR UI without a Gemini API key. Try the recipe recommendation page, login with demo / Admin1234!, or browse sample discount ingredients.";
+        }
+
         String apiKey = getApiKey();
         if (apiKey == null) {
             return "API 키가 설정되지 않았습니다. 관리자에게 문의하세요.";

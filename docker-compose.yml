@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     image: ${DOCKERHUB_USERNAME:-recipekr}/recipekr:latest
@@ -8,19 +6,21 @@ services:
       dockerfile: Dockerfile
     container_name: recipekr-app
     ports:
-      - "80:8080"
+      - "${APP_PORT:-8080}:8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-tidb}
-      - TIDB_URL=${TIDB_URL}
-      - TIDB_USERNAME=${TIDB_USERNAME}
-      - TIDB_PASSWORD=${TIDB_PASSWORD}
-      - RDS_URL=${RDS_URL}
-      - RDS_USERNAME=${RDS_USERNAME}
-      - RDS_PASSWORD=${RDS_PASSWORD}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - JAVA_OPTS=${JAVA_OPTS:- -Xms128m -Xmx256m}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
-    restart: always
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-demo}
+      - JAVA_OPTS=${JAVA_OPTS:--Xms128m -Xmx256m}
+      - PYTHONIOENCODING=utf-8
+      - PYTHONUTF8=1
+      - TIDB_URL
+      - TIDB_USERNAME
+      - TIDB_PASSWORD
+      - RDS_URL
+      - RDS_USERNAME
+      - RDS_PASSWORD
+      - GEMINI_API_KEY
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_DEFAULT_REGION
+      - AWS_S3_BUCKET
+    restart: unless-stopped

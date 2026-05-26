@@ -59,6 +59,7 @@ jobs:
             
             # 2. GitHub Secrets 정보를 활용하여 .env 파일을 매 배포마다 안전하게 재생성 (보안 최적화)
             echo "SPRING_PROFILES_ACTIVE=rds" > .env
+            echo "APP_PORT=80" >> .env
             echo "JAVA_OPTS=-Xms128m -Xmx256m" >> .env
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env

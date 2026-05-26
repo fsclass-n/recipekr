@@ -1,8 +1,9 @@
 spring:
   datasource:
-    # TiDB Serverless (MySQL 호환) 접속 정보
-    # GitHub Secrets 또는 로컬 OS 환경 변수를 통해 주입받습니다.
-    url: ${TIDB_URL:jdbc:mysql://gateway01.ap-northeast-1.prod.aws.tidbcloud.com:4000/recipekr?useSSL=true&serverTimezone=Asia/Seoul}
-    username: ${TIDB_USERNAME:2tKL7PvWWp5JakF.root}
-    password: ${TIDB_PASSWORD:inZWb4Ps6xN5siFn}
+    # TiDB Serverless (MySQL compatible) connection info.
+    # Set these through .env, OS environment variables, Render, or GitHub Secrets.
+    # The fallback values are local placeholders only and must not contain real secrets.
+    url: ${TIDB_URL:jdbc:mysql://localhost:4000/recipekr?useSSL=false&serverTimezone=Asia/Seoul}
+    username: ${TIDB_USERNAME:root}
+    password: ${TIDB_PASSWORD:password}
     driver-class-name: com.mysql.cj.jdbc.Driver

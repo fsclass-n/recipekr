@@ -3,10 +3,13 @@ package com.recipekr.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,6 +30,15 @@ import java.util.Map;
 public class AiRecommendService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Environment environment;
+
+    public AiRecommendService(Environment environment) {
+        this.environment = environment;
+    }
+
+    private boolean isDemoMode() {
+        return Arrays.asList(environment.getActiveProfiles()).contains("demo");
+    }
 
     private String getPythonExecutable() {
         String projectConda = Paths.get(System.getProperty("user.dir"), ".conda", "python.exe").toString();
@@ -50,6 +62,10 @@ public class AiRecommendService {
      * @return 추천 결과 맵 (recommendations 리스트, ai_message 포함)
      */
     public Map<String, Object> recommend(String ingredients, String healthType, int topN) {
+        if (isDemoMode()) {
+            return demoRecommendations(ingredients, healthType, topN);
+        }
+
         try {
             // ① predict.py 경로 계산 (프로젝트 루트 기준)
             Path scriptPath = Paths.get(System.getProperty("user.dir"))
@@ -158,5 +174,51 @@ public class AiRecommendService {
             log.error("[AI] 추천 스크립 실행 실패: {}", e.getMessage(), e);
             return Collections.emptyMap();
         }
+    }
+
+    private Map<String, Object> demoRecommendations(String ingredients, String healthType, int topN) {
+        List<Map<String, Object>> samples = new ArrayList<>();
+        List<String> selected = Arrays.stream(ingredients.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .limit(4)
+                .toList();
+        String ingredientText = selected.isEmpty() ? "tofu, egg, green onion" : String.join(", ", selected);
+
+        samples.add(Map.of(
+                "rank", 1,
+                "id", 0,
+                "title", "Demo Smart Fridge Rice Bowl",
+                "ingredients", ingredientText + ", rice, sesame oil",
+                "calories", 520,
+                "health_type", healthType,
+                "recipe_text", "1. Chop the selected ingredients. 2. Stir-fry them lightly. 3. Serve over rice with sesame oil.",
+                "score", 0.97
+        ));
+        samples.add(Map.of(
+                "rank", 2,
+                "id", 0,
+                "title", "Demo Quick Soup",
+                "ingredients", ingredientText + ", broth, garlic",
+                "calories", 380,
+                "health_type", healthType,
+                "recipe_text", "1. Simmer broth with garlic. 2. Add ingredients. 3. Cook until tender and season gently.",
+                "score", 0.94
+        ));
+        samples.add(Map.of(
+                "rank", 3,
+                "id", 0,
+                "title", "Demo Fresh Salad Plate",
+                "ingredients", ingredientText + ", lettuce, yogurt dressing",
+                "calories", 310,
+                "health_type", healthType,
+                "recipe_text", "1. Slice ingredients. 2. Arrange on a plate. 3. Finish with a light dressing.",
+                "score", 0.91
+        ));
+
+        return Map.of(
+                "recommendations", samples.stream().limit(Math.max(1, topN)).toList(),
+                "ai_message", "Demo mode: sample recipes were generated without Gemini or Python dependencies."
+        );
     }
 }

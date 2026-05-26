@@ -1,149 +1,250 @@
-# Stage 10 Summary: IDE 없이 RecipeKR 실행 가능하도록 배치 파일 안정화
+# Stage 10 Summary: 실행 방식 정리 및 데모 모드 추가
 
-## 작업 배경
+## 목표
 
-`start-recipekr.bat`를 통해 VSCode/IntelliJ 같은 IDE 없이 프로젝트를 실행하려고 했지만, Windows 명령 프롬프트에서 한글이 깨지면서 배치 파일의 일부 줄이 잘못된 명령어로 해석되어 실행이 실패했다.
+RecipeKR을 여러 환경에서 안전하게 실행할 수 있도록 실행 방식을 정리했다.
 
-주요 증상은 다음과 같았다.
+- 개발자 PC: `.env`와 VSCode `launch.json`으로 실제 TiDB, Gemini, RPA 기능 사용
+- 일반 로컬 PC: Docker Desktop만 설치하면 JDK/Python 설치 없이 실행
+- Docker 없는 PC: Java 21만 있으면 임시 데이터 기반 데모 실행
+- Render 서버: TiDB 환경변수로 서버 배포
+- AWS EC2: GitHub Secrets 기반 `.env` 생성 후 RDS로 배포
 
-- 명령창에서 한글 문구가 깨져 표시됨
-- `'IDE' is not recognized as an internal or external command` 같은 오류 발생
-- 배치 파일의 한글 주석/문구가 `cmd.exe`에서 명령어처럼 잘못 해석됨
-- IDE가 자동으로 넣어주던 환경변수가 없으면 DB/API 설정이 적용되지 않을 수 있음
+## 주요 변경 내역
 
-## 원인
+### 1. 보안 설정 정리
 
-기존 `start-recipekr.bat`는 파일 안에 한글 `echo`와 한글 주석이 포함되어 있었고, 파일 시작 부분에서 `chcp 65001`로 UTF-8 코드페이지를 설정하고 있었다.
+`application-tidb.yml`에 있던 실제 TiDB 접속 정보를 제거했다.
 
-하지만 Windows `cmd.exe`는 배치 파일을 읽는 시점에 이미 현재 코드페이지 기준으로 파일 내용을 파싱한다. 따라서 `chcp 65001`이 실행되기 전에 UTF-8 한글 줄이 먼저 깨져 해석되었고, 그 결과 깨진 문자열 일부가 명령어로 실행되면서 오류가 발생했다.
-
-또한 Spring Boot 설정에서는 콘솔 로그 인코딩이 `MS949`로 지정되어 있었는데, 배치 파일은 UTF-8 콘솔을 사용하도록 설정하고 있어 로그 인코딩도 서로 맞지 않았다.
-
-## 변경 내역
-
-### 1. `start-recipekr.bat` 수정
-
-배치 파일이 어떤 Windows 코드페이지에서도 안전하게 파싱되도록 파일 내부 문구와 주석을 ASCII 기반으로 정리했다.
-
-적용한 주요 변경 사항:
-
-- `setlocal EnableExtensions DisableDelayedExpansion` 추가
-- 콘솔 코드페이지를 UTF-8로 설정
-- JVM 인코딩 옵션 추가
-  - `-Dfile.encoding=UTF-8`
-  - `-Dstdout.encoding=UTF-8`
-  - `-Dstderr.encoding=UTF-8`
-- `.env` 파일 자동 로드 기능 추가
-- `SPRING_PROFILES_ACTIVE`가 없으면 기본값을 `tidb`로 설정
-- `java` 명령 사용 가능 여부 확인
-- `gradlew.bat` 존재 여부 확인
-- Gradle wrapper를 통해 `bootRun --console=plain` 실행
-- `DEBUG` 환경변수로 인해 Gradle wrapper 명령이 과도하게 출력되는 현상 방지
-
-수정 파일:
-
-- `start-recipekr.bat`
-
-### 2. Spring Boot 콘솔 인코딩 수정
-
-`src/main/resources/application.yml`의 콘솔 로그 인코딩을 배치 파일의 UTF-8 설정과 맞췄다.
-
-변경 전:
+현재는 실제 키 없이 환경변수만 참조한다.
 
 ```yml
-logging:
-  charset:
-    console: MS949
-    file: UTF-8
+url: ${TIDB_URL:jdbc:mysql://localhost:4000/recipekr?useSSL=false&serverTimezone=Asia/Seoul}
+username: ${TIDB_USERNAME:root}
+password: ${TIDB_PASSWORD:password}
 ```
 
-변경 후:
+`launch.json`에서도 실제 TiDB 값을 제거하고 `.env`를 읽도록 변경했다.
+
+```json
+"envFile": "${workspaceFolder}/.env"
+```
+
+실제 보안 키는 다음 위치에서만 관리한다.
+
+- 로컬 개발: `.env`
+- Render: Render 환경변수
+- AWS EC2: GitHub Secrets에서 배포 시 `.env` 생성
+
+### 2. Docker 실행 방식 정리
+
+`start-recipekr.bat`는 이제 Java/Gradle을 직접 실행하지 않고 Docker Compose로 실행한다.
+
+Docker 이미지 안에는 다음이 포함된다.
+
+- Java 21 런타임
+- Python 가상환경
+- `python-ai/requirements.txt` 패키지
+- Playwright Chromium
+- Spring Boot JAR
+
+따라서 Docker 실행에서는 로컬 PC에 JDK, Python, pip 패키지, Playwright를 따로 설치하지 않아도 된다.
+
+### 3. Docker 로컬 기본값을 데모 모드로 변경
+
+`.env`가 없는 로컬 Docker 실행은 기본적으로 `demo` 프로필로 시작한다.
 
 ```yml
-logging:
-  charset:
-    console: UTF-8
-    file: UTF-8
+SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-demo}
 ```
 
-수정 파일:
+이 경우 실제 TiDB, Gemini, RPA를 호출하지 않고 H2 임시 DB와 샘플 응답을 사용한다.
 
-- `src/main/resources/application.yml`
+실제 개발 모드로 실행하려면 `.env`에 아래처럼 설정한다.
+
+```text
+SPRING_PROFILES_ACTIVE=tidb
+TIDB_URL=...
+TIDB_USERNAME=...
+TIDB_PASSWORD=...
+GEMINI_API_KEY=...
+```
+
+### 4. 데모 프로필 추가
+
+새 파일을 추가했다.
+
+- `src/main/resources/application-demo.yml`
+- `src/main/resources/sql/demo_schema.sql`
+- `src/main/resources/sql/demo_data.sql`
+
+데모 모드는 H2 인메모리 DB를 사용한다.
+
+포함된 샘플:
+
+- 데모 사용자
+- 관리자 사용자
+- 샘플 레시피
+- 샘플 할인 재료
+
+데모 로그인 계정:
+
+```text
+ID: demo
+PW: Admin1234!
+```
+
+### 5. AI/RPA 데모 응답 처리
+
+`demo` 프로필에서는 외부 기능을 실제 호출하지 않는다.
+
+- `AiRecommendService`: Gemini/Python 호출 대신 샘플 레시피 추천 반환
+- `GeminiChatService`: Gemini API 호출 대신 샘플 챗봇 응답 반환
+- `DiscountCrawlerService`: 실제 Playwright RPA 크롤링 없이 성공 처리
+
+이 덕분에 `.env`, TiDB, Gemini API 키, Python/RPA가 없어도 주요 화면 흐름을 확인할 수 있다.
+
+### 6. Docker 없는 데모 실행 파일 추가
+
+`start-recipekr-demo.bat`를 추가했다.
+
+이 파일은 Docker 없이 `demo` 프로필로 서버를 실행한다.
+
+필요 조건:
+
+- Java 21 설치
+
+필요하지 않은 것:
+
+- Docker Desktop
+- `.env`
+- TiDB 접속 정보
+- Gemini API 키
+- Python 라이브러리
+- Playwright
 
 ## 실행 방법
 
-IDE 없이 Windows 탐색기 또는 명령 프롬프트에서 바로 실행할 수 있다.
+### 방법 1. 개발자 PC에서 VSCode 디버그 실행
 
-### 방법 1. 탐색기에서 실행
+개발자 PC에서는 `.env` 파일을 준비한다.
 
-1. 프로젝트 폴더를 연다.
-   - `D:\wi\lab\recipekr`
-2. `start-recipekr.bat` 파일을 더블클릭한다.
-3. 명령 프롬프트 창이 열리면 서버가 시작될 때까지 기다린다.
-4. 브라우저에서 아래 주소로 접속한다.
+```text
+SPRING_PROFILES_ACTIVE=tidb
+TIDB_URL=...
+TIDB_USERNAME=...
+TIDB_PASSWORD=...
+GEMINI_API_KEY=...
+```
+
+VSCode에서 `Spring Boot-RecipekrApplication<recipekr>` 디버그 구성을 실행한다.
+
+이 방식은 `launch.json`이 `.env`를 읽어 실제 TiDB, Gemini, RPA 환경으로 실행한다.
+
+### 방법 2. Docker Desktop으로 로컬 실행
+
+Docker Desktop을 설치하고 실행한 뒤 프로젝트 루트에서 아래 파일을 실행한다.
+
+```bat
+start-recipekr.bat
+```
+
+또는 직접 실행한다.
+
+```bat
+docker compose up --build
+```
+
+접속 주소:
 
 ```text
 http://localhost:8080
 ```
 
-### 방법 2. 명령 프롬프트에서 실행
+`.env`가 없으면 자동으로 데모 모드로 실행된다.
+
+`.env`에 `SPRING_PROFILES_ACTIVE=tidb`와 TiDB/Gemini 값을 넣으면 실제 기능으로 실행된다.
+
+### 방법 3. Docker 없이 데모 실행
+
+Java 21이 설치되어 있다면 Docker 없이 데모 모드로 실행할 수 있다.
 
 ```bat
-cd /d D:\wi\lab\recipekr
-start-recipekr.bat
+start-recipekr-demo.bat
 ```
 
-## 실행 전 필요 조건
-
-### 1. JDK 21 설치
-
-프로젝트는 Gradle toolchain에서 Java 21을 사용한다. 실행 PC에 JDK 21이 설치되어 있어야 한다.
-
-확인 명령:
-
-```bat
-java -version
-```
-
-JDK가 없으면 아래 주소에서 JDK 21을 설치한다.
+접속 주소:
 
 ```text
-https://adoptium.net/temurin/releases/?version=21
+http://localhost:8080
 ```
 
-### 2. `.env` 파일 확인
-
-프로젝트 루트에 `.env` 파일이 있으면 `start-recipekr.bat`가 자동으로 읽어서 환경변수로 등록한다.
-
-현재 배치 파일은 다음과 같은 값을 `.env`에서 읽어 사용할 수 있다.
+데모 로그인:
 
 ```text
-SPRING_PROFILES_ACTIVE
-TIDB_URL
-TIDB_USERNAME
-TIDB_PASSWORD
-GEMINI_API_KEY
+ID: demo
+PW: Admin1234!
 ```
 
-`.env`가 없더라도 `application.yml`과 `application-tidb.yml`의 기본값으로 실행을 시도한다.
+이 방식은 H2 임시 DB를 사용하므로 서버를 재시작하면 초기 샘플 데이터로 돌아간다.
+
+### 방법 4. Render 서버 + TiDB
+
+Render에서는 Dockerfile로 서버를 빌드하고 환경변수를 설정한다.
+
+필수 환경변수:
+
+```text
+SPRING_PROFILES_ACTIVE=tidb
+TIDB_URL=...
+TIDB_USERNAME=...
+TIDB_PASSWORD=...
+GEMINI_API_KEY=...
+```
+
+사용자는 Render 웹 주소로 접속하므로 로컬 설치가 필요 없다.
+
+### 방법 5. AWS EC2 + RDS
+
+GitHub Actions가 Docker 이미지를 빌드해 Docker Hub에 올리고, EC2에서 `docker-compose.yml`을 실행한다.
+
+EC2 배포 시 GitHub Secrets 값으로 `.env`가 자동 생성된다.
+
+```text
+SPRING_PROFILES_ACTIVE=rds
+APP_PORT=80
+RDS_URL=...
+RDS_USERNAME=...
+RDS_PASSWORD=...
+GEMINI_API_KEY=...
+```
+
+EC2에서는 기존처럼 80 포트로 서비스된다.
+
+## 실행 방식별 기능 비교
+
+| 실행 방식 | DB | AI 추천 | RPA | 설치 필요 |
+| --- | --- | --- | --- | --- |
+| VSCode 개발 실행 | TiDB | 실제 Gemini/Python | 실제 Playwright | JDK, Python 환경 |
+| Docker + `.env` 있음 | TiDB 또는 RDS | 실제 Gemini/Python | 실제 Playwright | Docker Desktop |
+| Docker + `.env` 없음 | H2 데모 DB | 샘플 응답 | 샘플 성공 처리 | Docker Desktop |
+| Docker 없는 데모 | H2 데모 DB | 샘플 응답 | 샘플 성공 처리 | Java 21 |
+| Render + TiDB | TiDB | 실제 Gemini/Python | 실제 Playwright | 사용자 설치 없음 |
+| EC2 + RDS | RDS | 실제 Gemini/Python | 실제 Playwright | 사용자 설치 없음 |
 
 ## 검증 결과
 
-수정 후 다음 항목을 확인했다.
+다음 항목을 확인했다.
 
-- `cmd.exe`에서 `start-recipekr.bat` 실행 시 한글 깨짐으로 인한 명령어 오류가 더 이상 발생하지 않음
-- Gradle wrapper 정상 실행 확인
-- Spring Boot 서버가 `localhost:8080`에서 LISTEN 상태로 기동됨
-- `http://localhost:8080` 요청에 HTTP `200` 응답 확인
-- `git diff --check`로 공백/패치 형식 문제 없음 확인
+- `.\gradlew.bat test --console=plain` 성공
+- `demo` 프로필로 서버 부팅 성공
+- `http://localhost:18080` 요청에 HTTP 200 응답 확인
+- `git diff --check` 통과
 
-## 종료 방법
+## 주의 사항
 
-서버가 실행 중인 명령 프롬프트 창에서 아래 방법 중 하나로 종료한다.
+아무것도 설치되지 않은 PC에서 로컬 서버를 직접 실행하는 것은 불가능하다. 최소한 Docker Desktop 또는 Java 21 같은 실행 환경은 필요하다.
 
-- `Ctrl + C` 입력 후 종료 확인
-- 명령 프롬프트 창 닫기
+완전 무설치 사용자에게 제공하려면 Render 또는 EC2에 배포한 뒤 웹 주소로 접속하게 해야 한다.
 
-## 참고
-
-배치 파일 내부에 한글 문구를 다시 추가하면 Windows 코드페이지에 따라 같은 문제가 재발할 수 있다. 한글 안내 문구가 필요하면 별도 `README` 또는 Markdown 문서에 작성하고, `.bat` 파일 안에는 ASCII 문구만 유지하는 것이 안전하다.
+이미 Git에 실제 TiDB 또는 API 키가 커밋된 적이 있다면, 파일에서 제거했더라도 Git 히스토리에 남아 있을 수 있으므로 해당 키는 새로 발급하거나 비밀번호를 교체해야 한다.
