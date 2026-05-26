@@ -28,7 +28,10 @@
           rel="stylesheet">
 
     <!-- Global CSS -->
-    <link rel="stylesheet" th:href="@{/css/global.css?v=16}">
+    <link rel="stylesheet" th:href="@{/css/global.css?v=20}">
+
+    <!-- Chatbot CSS -->
+    <link rel="stylesheet" th:href="@{/css/chatbot.css?v=2}">
 
     <!-- Page-specific CSS slot -->
     <th:block th:replace="${extraCss} ?: ~{}"></th:block>
@@ -39,7 +42,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top" id="mainNavbar">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
-            <span class="brand-icon">🍽️</span>
+            <span class="brand-icon"><img src="/images/icons/plate.svg" alt="로고"></span>
             <span class="brand-text">냉장고 레시피</span>
         </a>
         <button class="navbar-toggler border-0 custom-toggler" type="button"
@@ -166,8 +169,10 @@
                     window.location.href = targetUrl;
                 }, 250);
             });
-        });
     });
 </script>
+
+<!-- Chatbot Fragment -->
+<div th:replace="~{fragments/chatbot :: chatbot}"></div>
 </body>
 </html>

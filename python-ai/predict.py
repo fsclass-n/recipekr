@@ -20,6 +20,11 @@ import argparse
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv, find_dotenv
+import warnings
+
+# 경고 메시지 억제 (Spring Boot에서 stdout으로 JSON 파싱할 때 방해되지 않도록)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+warnings.filterwarnings('ignore')
 
 # 루트 또는 현재 폴더의 .env 자동 탐색 및 로드
 load_dotenv(find_dotenv())

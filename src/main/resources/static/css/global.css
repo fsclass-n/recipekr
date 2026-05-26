@@ -111,26 +111,40 @@ main {
     top: 0;
     left: 0;
     width: 100%;
-    background: transparent;
-    border-bottom: none;
+    background: rgba(8, 14, 35, 0.94);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
     height: var(--navbar-height);
     padding-left: 24px;
     padding-right: 24px;
     transition: all var(--transition-base);
     z-index: 1000;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
 }
 
 #mainNavbar.scrolled {
-    background: rgba(10, 15, 30, 0.99);
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+    background: rgba(8, 14, 35, 0.96) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16) !important;
 }
 
 .brand-icon {
     font-size: 1.8rem;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+}
+
+.brand-icon:hover {
+    transform: scale(1.05);
+}
+
+.brand-icon img {
+    width: 24px !important;
+    height: 24px !important;
+    object-fit: contain;
+    vertical-align: middle;
 }
 
 .brand-text {
@@ -144,25 +158,26 @@ main {
 }
 
 .navbar-nav .nav-link {
-    color: rgba(255, 255, 255, 0.75) !important;
+    color: rgba(255, 255, 255, 0.78) !important;
     font-weight: 500;
-    padding: 0.4rem 0.75rem !important;
-    border-radius: var(--radius-md);
-    transition: color var(--transition-fast), background var(--transition-fast);
+    padding: 0.45rem 0.9rem !important;
+    border-radius: calc(var(--radius-md) * 1.2);
+    transition: color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
     font-size: var(--font-size-sm);
     background: transparent !important;
 }
 
 .navbar-nav .nav-link:hover {
     color: var(--color-white) !important;
-    background: transparent !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    transform: translateY(-1px);
 }
 
 .navbar-nav .nav-link.active {
     color: var(--color-white) !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.18) !important;
 }
 
 /* ── 4. 버튼 커스텀 ── */
@@ -602,201 +617,6 @@ select.form-control-dark option {
         gap: 1rem;
     }
     .mobile-nav-actions .btn {
-/* ── 12. 배지 ── */
-.badge-brand {
-    background: rgba(255, 107, 53, 0.15);
-    color: var(--color-primary-light);
-    border: 1px solid rgba(255, 107, 53, 0.3);
-    border-radius: var(--radius-full);
-    padding: 0.3rem 0.85rem;
-    font-size: var(--font-size-xs);
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-/* ── 13. 로딩 스피너 커스텀 ── */
-.spinner-brand {
-    border-color: rgba(255, 107, 53, 0.25);
-    border-top-color: var(--color-primary);
-}
-
-/* ── 14. 스크롤바 ── */
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--color-dark);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--color-dark-3);
-    border-radius: var(--radius-full);
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--color-mid);
-}
-
-/* ── 15. 애니메이션 ── */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.3); }
-    50%       { box-shadow: 0 0 40px rgba(255, 107, 53, 0.6); }
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50%       { transform: translateY(-8px); }
-}
-
-.animate-fade-in-up {
-    animation: fadeInUp 0.5s ease forwards;
-}
-
-.animate-float {
-    animation: float 3s ease-in-out infinite;
-}
-
-/* 딜레이 유틸리티 */
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-
-/* ── 16. 반응형 유틸리티 ── */
-@media (max-width: 768px) {
-    .brand-text {
-        font-size: 1rem;
-    }
-
-    .btn-gradient-lg {
-        font-size: var(--font-size-base);
-        padding: 0.7rem 2rem;
-    }
-}
-
-/* ── 17. 햄버거 메뉴 애니메이션 ── */
-.custom-toggler {
-    width: 30px;
-    height: 24px;
-    position: relative;
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    padding: 0;
-    z-index: 1055; /* 오프캔버스 위로 올라오도록 */
-    -webkit-tap-highlight-color: transparent;
-}
-.custom-toggler:focus,
-.custom-toggler:active {
-    outline: none !important;
-    box-shadow: none !important;
-    border: none !important;
-    background: transparent !important;
-}
-.hamburger-icon {
-    width: 24px;
-    height: 18px;
-    position: relative;
-    margin: 0 auto;
-}
-.hamburger-icon span {
-    display: block;
-    position: absolute;
-    height: 2px;
-    width: 100%;
-    background: var(--color-white);
-    border-radius: 9px;
-    opacity: 1;
-    left: 0;
-    transform: rotate(0deg);
-    transition: .25s ease-in-out;
-}
-.hamburger-icon span:nth-child(1) { top: 0px; }
-.hamburger-icon span:nth-child(2) { top: 8px; }
-.hamburger-icon span:nth-child(3) { top: 16px; }
-
-/* 열렸을 때 X 모양으로 변환 */
-.custom-toggler.open .hamburger-icon span:nth-child(1) {
-    top: 8px;
-    transform: rotate(135deg);
-}
-.custom-toggler.open .hamburger-icon span:nth-child(2) {
-    opacity: 0;
-    left: -60px;
-}
-.custom-toggler.open .hamburger-icon span:nth-child(3) {
-    top: 8px;
-    transform: rotate(-135deg);
-}
-
-/* 오프캔버스 메뉴 스타일 커스텀 (메가커피 스타일) */
-.offcanvas-dark {
-    background-color: var(--color-dark-2) !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-}
-@media (max-width: 991.98px) {
-    #mainNavbar {
-        z-index: 1060 !important; /* 오프캔버스(1045) 및 백드롭(1040)보다 높게 설정 */
-    }
-    .offcanvas-dark.offcanvas-end {
-        top: var(--navbar-height) !important;
-        height: calc(100vh - var(--navbar-height)) !important;
-        width: 250px !important;
-        background-color: #1a1a1a !important; /* 더 어두운 배경 */
-        border-left: none;
-        box-shadow: -5px 0 20px rgba(0,0,0,0.5);
-    }
-    .offcanvas-body {
-        padding: 0 !important;
-    }
-    .offcanvas-dark .navbar-nav {
-        flex-direction: column;
-        width: 100%;
-        gap: 0 !important;
-    }
-    .offcanvas-dark .nav-item {
-        width: 100%;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .offcanvas-dark .nav-link {
-        font-size: 0.95rem;
-        padding: 1.25rem 1.5rem !important;
-        color: #ffffff !important;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-radius: 0;
-    }
-    .offcanvas-dark .nav-link:hover {
-        background: rgba(255,255,255,0.05);
-    }
-    .offcanvas-dark .nav-link::after {
-        content: '\F285'; /* bootstrap icon chevron-right */
-        font-family: bootstrap-icons;
-        font-size: 0.85rem;
-        color: rgba(255,255,255,0.3);
-    }
-    
-    /* 사용자 정보 및 버튼 영역 스타일링 */
-    .mobile-nav-actions {
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-    .mobile-nav-actions .btn {
         width: 100%;
         justify-content: center;
         padding-top: 0.7rem;
@@ -838,13 +658,13 @@ select.form-control-dark option {
         border: 1px solid transparent;
     }
     .desktop-nav-pill .nav-link:hover {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.08);
     }
     .desktop-nav-pill .nav-link.active {
-        background: transparent !important;
-        border: none !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
         color: #ffffff !important;
-        box-shadow: none !important;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16) !important;
     }
 }
 /* 모바일 푸터 카피라이트 한 줄 표기 */
@@ -875,9 +695,46 @@ select.form-control-dark option {
     vertical-align: -0.1em;
 }
 
-/* Force transparent for all desktop pills */
-.desktop-nav-pill .nav-link,
-.desktop-nav-pill .nav-link:hover,
-.desktop-nav-pill .nav-link.active {
+/* 데스크톱 네비 pill 기본 배경 설정 */
+.desktop-nav-pill .nav-link {
     background: transparent !important;
 }
+.desktop-nav-pill .nav-link:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+}
+.desktop-nav-pill .nav-link.active {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+}
+/ *  
+  % % 
+ 1 8 .  
+ T o s s f a c e  
+ E m o j i  
+ O v e r r i d e  
+  % % 
+ * /  
+ . b r a n d - i c o n  
+ . h e r o - e m o j i - m a i n  
+ . h e r o - c a r d - i c o n  
+ . f e a t u r e - c a r d - i c o n  
+   > >   s r c / m a i n / r e s o u r c e s / s t a t i c / c s s / g l o b a l . c s s ;   e c h o           f o n t - f a m i l y :   ' T o s s f a c e ' ,   s a n s - s e r i f   ! i m p o r t a n t ;   > >   s r c / m a i n / r e s o  
+ u r c e s / s t a t i c / c s s / g l o b a l . c s s ;   e c h o    
+ / *  
+ p���lб� 
+ $�D� 
+ p i l l  
+ 0��� 
+ 0��� 
+ $�� 
+ * /  
+ . d e s k t o p - n a v - p i l l  
+ . n a v - l i n k  
+   b a c k g r o u n d :   t r a n s p a r e n t   ! i m p o r t a n t ;    
+ . d e s k t o p - n a v - p i l l  
+ . n a v - l i n k : h o v e r  
+   b a c k g r o u n d :   r g b a ( 2 5 5 ,   2 5 5 ,   2 5 5 ,   0 . 0 6 )   ! i m p o r t a n t ;    
+ . d e s k t o p - n a v - p i l l  
+ . n a v - l i n k . a c t i v e  
+   b a c k g r o u n d :   r g b a ( 2 5 5 ,   2 5 5 ,   2 5 5 ,   0 . 1 2 )   ! i m p o r t a n t ;   b o r d e r :   1 p x   s o l i d   r g b a ( 2 5 5 ,   2 5 5 ,   2 5 5 ,   0 . 1 6 )   ! i m p o r t a n t ;    
+ 

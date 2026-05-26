@@ -9,6 +9,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -58,14 +59,17 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 인증 없이 접근 가능한 경로
                 .requestMatchers(
-                    "/",
-                    "/auth/login",
-                    "/auth/signup",
-                    "/auth/logout",
-                    "/css/**",
-                    "/js/**",
-                    "/images/**",
-                    "/error"
+                    new AntPathRequestMatcher("/"),
+                    new AntPathRequestMatcher("/auth/login"),
+                    new AntPathRequestMatcher("/auth/signup"),
+                    new AntPathRequestMatcher("/auth/logout"),
+                    new AntPathRequestMatcher("/css/**"),
+                    new AntPathRequestMatcher("/js/**"),
+                    new AntPathRequestMatcher("/images/**"),
+                    new AntPathRequestMatcher("/favicon.svg"),
+                    new AntPathRequestMatcher("/favicon.png"),
+                    new AntPathRequestMatcher("/favicon.ico"),
+                    new AntPathRequestMatcher("/error")
                 ).permitAll()
                 // 그 외 모든 요청은 로그인 필요 (레시피 추천 포함)
                 .anyRequest().authenticated()
@@ -99,9 +103,24 @@ public class SecurityConfig {
 
             // 5. CSRF 설정 (개발 편의상 특정 경로 제외 가능, 현재는 기본값 활성화)
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/api/**")    // REST API 경로는 CSRF 제외
+                .ignoringRequestMatchers(new AntPathRequestMatcher("/api/**"))    // REST API 경로는 CSRF 제외
             );
 
         return http.build();
+    }
+
+    /**
+     * 정적 리소스에 대해 보안 필터를 거치지 않도록 설정
+     */
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers(
+            new AntPathRequestMatcher("/css/**"),
+            new AntPathRequestMatcher("/js/**"),
+            new AntPathRequestMatcher("/images/**"),
+            new AntPathRequestMatcher("/favicon.svg"),
+            new AntPathRequestMatcher("/favicon.png"),
+            new AntPathRequestMatcher("/favicon.ico")
+        );
     }
 }
