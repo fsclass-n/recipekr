@@ -862,3 +862,8 @@ select.form-control-dark option {
         width: 50vw !important;
     }
 }
+
+/* ── 18. Tossface Emoji Override ── */
+.brand-icon, .hero-emoji-main, .hero-card-icon, .feature-card-icon {
+    font-family: 'Tossface', sans-serif !important;
+}
