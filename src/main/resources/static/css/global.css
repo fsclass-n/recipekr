@@ -31,7 +31,7 @@
     --gradient-card:       linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
 
     /* 타이포그래피 */
-    --font-sans:           'Inter', 'Noto Sans KR', -apple-system, sans-serif;
+    --font-sans:           'Inter', 'Noto Sans KR', 'Tossface', -apple-system, sans-serif;
     --font-size-xs:        0.75rem;
     --font-size-sm:        0.875rem;
     --font-size-base:      1rem;
