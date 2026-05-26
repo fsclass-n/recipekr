@@ -29,7 +29,7 @@ server:
 
 logging:
   charset:
-    console: MS949
+    console: UTF-8
     file: UTF-8
   level:
     com.recipekr: DEBUG

@@ -1,23 +1,57 @@
 @echo off
+setlocal EnableExtensions DisableDelayedExpansion
+
+REM Use UTF-8 for Korean text in this console window.
 chcp 65001 >nul
+set "JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 %JAVA_TOOL_OPTIONS%"
+set "DEBUG="
+
 echo ========================================================
-echo 냉장고 레시피 (RecipeKR) - 로컬 서버 실행 스크립트
+echo RecipeKR - local server launcher
 echo ========================================================
-echo.
-echo TiDB 연결 프로필로 Spring Boot 서버를 시작합니다...
-echo 시작 중입니다. 잠시만 기다려주세요. (초기 빌드 시 시간이 걸릴 수 있습니다)
-echo 서버가 성공적으로 켜지면 브라우저에서 http://localhost:8080 으로 접속하세요!
 echo.
 
-:: 스크립트가 위치한 폴더로 이동 (탐색기에서 바로 실행 시 현재 경로 보장)
+REM Move to the directory where this batch file exists.
 cd /d "%~dp0"
 
-:: 로컬 테스트용 TiDB 프로필 강제 지정
-set SPRING_PROFILES_ACTIVE=tidb
+REM Load .env so the app can run without IDE-provided environment variables.
+if exist ".env" (
+    echo Loading environment variables from .env...
+    for /f "usebackq eol=# tokens=1,* delims==" %%A in (".env") do (
+        if not "%%A"=="" set "%%A=%%B"
+    )
+) else (
+    echo .env was not found. Using application.yml defaults.
+)
 
-:: Gradle을 이용해 서버 실행 (call을 사용하여 실행 후 아래 명령어로 돌아오게 함)
-call gradlew.bat bootRun
+REM Default to the TiDB profile unless .env already defines a profile.
+if not defined SPRING_PROFILES_ACTIVE set "SPRING_PROFILES_ACTIVE=tidb"
+
+where java >nul 2>nul
+if errorlevel 1 (
+    echo.
+    echo Java was not found. Please install JDK 21 and run this file again.
+    echo Download: https://adoptium.net/temurin/releases/?version=21
+    pause
+    exit /b 1
+)
+
+if not exist "gradlew.bat" (
+    echo.
+    echo gradlew.bat was not found. Run this file from the project root.
+    pause
+    exit /b 1
+)
 
 echo.
-echo 서버가 종료되었습니다. 오류가 발생했다면 위 메시지를 확인해주세요.
+echo Starting Spring Boot server. Profile: %SPRING_PROFILES_ACTIVE%
+echo Please wait. The first build can take a while.
+echo Open http://localhost:8080 after the server starts successfully.
+echo.
+
+REM Run the server through the Gradle wrapper.
+call ".\gradlew.bat" bootRun --console=plain
+
+echo.
+echo Server stopped. If an error occurred, check the messages above.
 pause
