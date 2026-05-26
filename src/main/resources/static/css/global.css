@@ -111,17 +111,21 @@ main {
     top: 0;
     left: 0;
     width: 100%;
-    background: transparent;
-    border-bottom: 1px solid transparent;
+    background: rgba(10, 15, 30, 0.97);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     height: var(--navbar-height);
     padding-left: 24px;
     padding-right: 24px;
     transition: all var(--transition-base);
     z-index: 1000;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 #mainNavbar.scrolled {
-    background: rgba(15, 23, 42, 0.98);
+    background: rgba(10, 15, 30, 0.99);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
 }
 
 .brand-icon {

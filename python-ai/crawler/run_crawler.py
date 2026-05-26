@@ -197,8 +197,6 @@ async def run_crawlers(market: str = "all", dry_run: bool = False) -> list[dict]
                 "--disable-software-rasterizer",
                 "--disable-extensions",
                 "--mute-audio",
-                "--no-zygote",
-                "--single-process",
                 "--js-flags=--max-old-space-size=128"
             ],
         )

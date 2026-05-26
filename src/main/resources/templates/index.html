@@ -14,12 +14,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/global.css?v=16}">
+    <link rel="stylesheet" th:href="@{/css/global.css?v=17}">
 
     <link rel="stylesheet" th:href="@{/css/index.css?v=2}">
 
     <style>
-        /* 강제로 투명화 및 너비 축소 */
+        /* 네비게이션 pill 너비 축소 */
         @media (min-width: 992px) {
             .desktop-nav-pill {
                 background: transparent !important;
@@ -30,26 +30,16 @@
                 max-width: max-content !important;
             }
         }
-        .offcanvas-dark {
-            background: transparent !important;
-            background-color: transparent !important;
-            border: none !important;
-        }
-        @media (min-width: 992px) {
-            #navbarContent {
-                background: transparent !important;
-            }
-        }
     
         @media (max-width: 768px) {
             .scroll-hint {
                 margin-top: 36px !important;
             }
             #features .text-center.mt-5 {
-                margin-bottom: 80px !important; /* 모바일 푸터와의 여백 약 100px 확보를 위해 (기본패딩 40 + 여백 60 = 100) -> 아예 80px 줘서 넉넉하게 */
+                margin-bottom: 80px !important;
             }
         }
-</style>
+    </style>
 </head>
 <body>
 

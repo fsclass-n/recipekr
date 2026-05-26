@@ -33,6 +33,11 @@ public class AiRecommendService {
         if (new java.io.File(projectConda).exists()) {
             return projectConda;
         }
+        // local myenv conda environment support
+        String myenvConda = Paths.get(System.getProperty("user.home"), "anaconda3", "envs", "myenv", "python.exe").toString();
+        if (new java.io.File(myenvConda).exists()) {
+            return myenvConda;
+        }
         return "python";
     }
 
@@ -71,9 +76,9 @@ public class AiRecommendService {
             // GEMINI_API_KEY 환경변수 전달 (시스템 → .env 파일 폴백)
             String geminiApiKey = System.getenv("GEMINI_API_KEY");
             if (geminiApiKey == null || geminiApiKey.isBlank()) {
-                // .env 파일에서 직접 읽기 (절대 경로 고정)
+                // .env 파일에서 직접 읽기 (프로젝트 루트 기준, 로컬 개발 환경 지원)
                 try {
-                    Path envPath = Paths.get("D:/git/202605/recipekr/.env");
+                    Path envPath = Paths.get(System.getProperty("user.dir"), ".env");
                     if (envPath.toFile().exists()) {
                         for (String envLine : java.nio.file.Files.readAllLines(envPath)) {
                             if (envLine.startsWith("GEMINI_API_KEY=")) {
@@ -123,10 +128,27 @@ public class AiRecommendService {
 
             // ⑥ 에러 JSON 응답 처리 {"error": "..."}
             String json = output.toString().trim();
-            if (json.startsWith("{\"error\"")) {
-                Map<String, Object> err = objectMapper.readValue(json, new TypeReference<>() {});
-                log.error("[AI] Python 에러 응답: {}", err.get("error"));
-                return err; // 에러 메시지가 담긴 Map을 그대로 반환
+            
+            // 혹시 stdout에 다른 경고문자열이 섞여 있을 경우를 대비해 순수 JSON 객체 부분만 추출
+            int jsonStart = json.indexOf('{');
+            int jsonEnd = json.lastIndexOf('}');
+            if (jsonStart != -1 && jsonEnd != -1 && jsonStart <= jsonEnd) {
+                json = json.substring(jsonStart, jsonEnd + 1);
+            } else {
+                log.error("[AI] JSON 형식을 찾을 수 없습니다. 응답: {}", json);
+                return Map.of("error", "AI 서버로부터 유효한 응답을 받지 못했습니다.");
+            }
+
+            if (json.contains("\"error\"")) {
+                try {
+                    Map<String, Object> err = objectMapper.readValue(json, new TypeReference<>() {});
+                    if (err.containsKey("error")) {
+                        log.error("[AI] Python 에러 응답: {}", err.get("error"));
+                        return err;
+                    }
+                } catch (Exception ex) {
+                    // ignore and parse normally if "error" was just part of a text
+                }
             }
 
             // ⑦ 정상 JSON 객체 파싱 (recommendations, ai_message 포함)

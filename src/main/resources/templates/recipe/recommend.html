@@ -10,9 +10,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/global.css?v=16}">
+    <link rel="stylesheet" th:href="@{/css/global.css?v=17}">
     <link rel="stylesheet" th:href="@{/css/recipe.css?v=3}">
     <link rel="stylesheet" th:href="@{/css/chatbot.css?v=1}">
+    <style>
+        /* 레시피 추천 페이지 - 네비게이션 사각형 박스 배경 제거 */
+        @media (min-width: 992px) {
+            .desktop-nav-pill {
+                background: transparent !important;
+                background-color: transparent !important;
+                box-shadow: none !important;
+                border: none !important;
+                width: max-content !important;
+                max-width: max-content !important;
+            }
+        }
+    </style>
 
 </head>
 <body>

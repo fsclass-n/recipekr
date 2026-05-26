@@ -1,0 +1,375 @@
+﻿commit 6333ccb53211b81097358e3b39bfae0f2cab9945
+Author: fsclass-n <whyeil@naver.com>
+Date:   Wed May 20 11:50:00 2026 +0900
+
+    2?④퀎 援ы쁽 ?꾨즺
+
+diff --git a/src/main/resources/templates/index.html b/src/main/resources/templates/index.html
+new file mode 100644
+index 0000000..e4bd618
+--- /dev/null
++++ b/src/main/resources/templates/index.html
+@@ -0,0 +1,367 @@
++<!DOCTYPE html>
++<html lang="ko" xmlns:th="http://www.thymeleaf.org"
++      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <meta name="description" content="?됱옣怨??뚮㉨湲?- AI媛 ?됱옣怨????щ즺濡??ㅻ뒛???덉떆?쇰? 異붿쿇???쒕┰?덈떎">
++    <title>??| ?됱옣怨??뚮㉨湲?/title>
++
++    <!-- Bootstrap 5 -->
++    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
++    <!-- Bootstrap Icons -->
++    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
++    <!-- Google Fonts -->
++    <link rel="preconnect" href="https://fonts.googleapis.com">
++    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
++    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
++    <!-- Global CSS -->
++    <link rel="stylesheet" th:href="@{/css/global.css}">
++</head>
++<body>
++
++<!-- ??? NAVBAR ??? -->
++<nav class="navbar navbar-expand-lg navbar-dark sticky-top" id="mainNavbar">
++    <div class="container">
++        <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
++            <span class="brand-icon">?띂截?/span>
++            <span class="brand-text">?됱옣怨??뚮㉨湲?/span>
++        </a>
++        <button class="navbar-toggler border-0" type="button"
++                data-bs-toggle="collapse" data-bs-target="#navbarContent">
++            <span class="navbar-toggler-icon"></span>
++        </button>
++        <div class="collapse navbar-collapse" id="navbarContent">
++            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
++                <li class="nav-item">
++                    <a class="nav-link active" th:href="@{/}">
++                        <i class="bi bi-house-door me-1"></i>??+                    </a>
++                </li>
++                <li class="nav-item" sec:authorize="isAuthenticated()">
++                    <a class="nav-link" th:href="@{/recipe/recommend}">
++                        <i class="bi bi-stars me-1"></i>?덉떆??異붿쿇
++                    </a>
++                </li>
++            </ul>
++            <div class="d-flex align-items-center gap-2">
++                <div sec:authorize="isAnonymous()" class="d-flex gap-2">
++                    <a th:href="@{/auth/login}" class="btn btn-outline-light btn-sm px-3">
++                        <i class="bi bi-box-arrow-in-right me-1"></i>濡쒓렇??+                    </a>
++                    <a th:href="@{/auth/signup}" class="btn btn-accent btn-sm px-3">
++                        <i class="bi bi-person-plus me-1"></i>?뚯썝媛??+                    </a>
++                </div>
++                <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-3">
++                    <span class="text-white-50 d-none d-md-inline">
++                        <i class="bi bi-person-circle me-1"></i>
++                        <span th:text="${user != null ? user.nickname : ''} + '??"></span>
++                    </span>
++                    <a th:href="@{/auth/logout}" class="btn btn-outline-light btn-sm px-3">
++                        <i class="bi bi-box-arrow-right me-1"></i>濡쒓렇?꾩썐
++                    </a>
++                </div>
++            </div>
++        </div>
++    </div>
++</nav>
++
++<!-- ??? HERO SECTION ??? -->
++<section class="hero-section">
++    <!-- 諛곌꼍 ?μ떇 -->
++    <div class="hero-bg" aria-hidden="true">
++        <div class="hero-blob hero-blob-1"></div>
++        <div class="hero-blob hero-blob-2"></div>
++        <div class="hero-grid"></div>
++    </div>
++
++    <div class="container position-relative">
++        <div class="row align-items-center min-vh-hero">
++            <div class="col-lg-7 col-xl-6">
++                <!-- 諛곗? -->
++                <div class="hero-badge animate-fade-in-up">
++                    <span class="badge-brand">
++                        <i class="bi bi-stars me-1"></i> AI 湲곕컲 ?덉떆??異붿쿇
++                    </span>
++                </div>
++
++                <!-- ?ㅻ뱶?쇱씤 -->
++                <h1 class="hero-title animate-fade-in-up delay-100">
++                    ?됱옣怨????щ즺濡?br>
++                    <span class="brand-gradient-text">?ㅻ뒛 萸?癒뱀??</span>
++                </h1>
++
++                <!-- ?쒕툕移댄뵾 -->
++                <p class="hero-subtitle animate-fade-in-up delay-200">
++                    ?⑥? ?앹옱猷뚮? ?낅젰?섎㈃ AI媛 理쒖쟻???덉떆?쇰? 異붿쿇???쒕젮??<br>
++                    <strong style="color: var(--color-secondary)">?ㅻ뒛??留덊듃 ?좎씤 ?щ즺</strong>源뚯? 諛섏쁺???ㅻ쭏?명븳 異붿쿇!
++                </p>
++
++                <!-- CTA 踰꾪듉 -->
++                <div class="hero-cta animate-fade-in-up delay-300">
++                    <a th:href="${#authorization.expression('isAuthenticated()') ? '/recipe/recommend' : '/auth/signup'}"
++                       class="btn btn-gradient-lg me-3">
++                        <i class="bi bi-stars me-2"></i>?덉떆??異붿쿇諛쏄린
++                    </a>
++                    <a th:href="@{/auth/login}"
++                       th:if="${#authorization.expression('isAnonymous()')}"
++                       class="btn btn-outline-light btn-lg px-4">
++                        濡쒓렇??<i class="bi bi-arrow-right ms-1"></i>
++                    </a>
++                </div>
++
++                <!-- ?듦퀎 -->
++                <div class="hero-stats animate-fade-in-up delay-300">
++                    <div class="stat-item">
++                        <span class="stat-num">10K+</span>
++                        <span class="stat-label">?덉떆??/span>
++                    </div>
++                    <div class="stat-divider"></div>
++                    <div class="stat-item">
++                        <span class="stat-num">3怨?/span>
++                        <span class="stat-label">留덊듃 ?곕룞</span>
++                    </div>
++                    <div class="stat-divider"></div>
++                    <div class="stat-item">
++                        <span class="stat-num">留ㅼ씪</span>
++                        <span class="stat-label">?낅뜲?댄듃</span>
++                    </div>
++                </div>
++            </div>
++
++            <!-- Hero ?대?吏/?대え吏 移대뱶 -->
++            <div class="col-lg-5 col-xl-6 d-none d-lg-flex justify-content-center">
++                <div class="hero-visual animate-fade-in-up delay-200">
++                    <div class="hero-emoji-main animate-float">?쪟</div>
++                    <div class="hero-card hero-card-1">
++                        <span class="hero-card-icon">?ⅵ</span>
++                        <div>
++                            <div class="hero-card-title">釉뚮줈肄쒕━</div>
++                            <div class="hero-card-sub">30% ?좎씤 以?/div>
++                        </div>
++                    </div>
++                    <div class="hero-card hero-card-2">
++                        <span class="hero-card-icon">??/span>
++                        <div>
++                            <div class="hero-card-title">AI 異붿쿇 ?꾨즺</div>
++                            <div class="hero-card-sub">?덉떆??12媛?/div>
++                        </div>
++                    </div>
++                    <div class="hero-card hero-card-3">
++                        <span class="hero-card-icon">?뜵</span>
++                        <div>
++                            <div class="hero-card-title">?ㅻ뒛??異붿쿇</div>
++                            <div class="hero-card-sub">????댁궡 蹂띠쓬諛?/div>
++                        </div>
++                    </div>
++                </div>
++            </div>
++        </div>
++    </div>
++</section>
++
++<!-- ??? FEATURES SECTION ??? -->
++<section class="features-section py-5">
++    <div class="container">
++        <div class="text-center mb-5">
++            <span class="badge-brand mb-3 d-inline-block">?쒕퉬???뱀쭠</span>
++            <h2 class="section-title">???됱옣怨??뚮㉨湲곗씤媛??</h2>
++            <p class="section-subtitle">AI? ?ㅼ떆媛??곗씠?곕줈 留ㅼ씪 ?덈줈???덉떆?쇰? 寃쏀뿕?섏꽭??/p>
++        </div>
++
++        <div class="row g-4">
++            <div class="col-md-4">
++                <div class="feature-card card-dark p-4 h-100">
++                    <div class="feature-card-icon">?쨼</div>
++                    <h3 class="feature-card-title">AI 留욎땄 異붿쿇</h3>
++                    <p class="feature-card-desc">TF-IDF? 肄붿궗???좎궗???뚭퀬由ъ쬁?쇰줈 蹂댁쑀 ?щ즺??媛???곹빀???덉떆?쇰? ?뺣??섍쾶 異붿쿇?⑸땲??</p>
++                </div>
++            </div>
++            <div class="col-md-4">
++                <div class="feature-card card-dark p-4 h-100">
++                    <div class="feature-card-icon">?썟</div>
++                    <h3 class="feature-card-title">?ㅼ떆媛??좎씤 諛섏쁺</h3>
++                    <p class="feature-card-desc">留ㅼ씪 ?덈꼍, Playwright ?щ·?ш? ?대쭏?맞룻솃?뚮윭???좎씤 ?뺣낫瑜??섏쭛?섏뿬 ?덉떆??異붿쿇??諛섏쁺?⑸땲??</p>
++                </div>
++            </div>
++            <div class="col-md-4">
++                <div class="feature-card card-dark p-4 h-100">
++                    <div class="feature-card-icon">?뮞</div>
++                    <h3 class="feature-card-title">嫄닿컯 紐⑺몴蹂??꾪꽣</h3>
++                    <p class="feature-card-desc">?ㅼ씠?댄듃쨌洹쇱쑁利앷?쨌洹좏삎????嫄닿컯 ?좏삎???좏깮?섎㈃ 移쇰줈由ъ? ?곸뼇?뚮? 怨좊젮???덉떆?쇰쭔 蹂댁뿬?쒕┰?덈떎.</p>
++                </div>
++            </div>
++        </div>
++    </div>
++</section>
++
++<!-- ??? FOOTER ??? -->
++<footer class="footer mt-auto py-4">
++    <div class="container text-center">
++        <p class="mb-1 text-muted">
++            <span class="brand-gradient-text fw-semibold">?됱옣怨??뚮㉨湲?/span>
++            &nbsp;??nbsp; AI媛 異붿쿇?섎뒗 ?ㅻ뒛???덉떆??+        </p>
++        <p class="mb-0 text-muted small">&copy; 2024 RecipeKR. Built with Spring Boot 3 &amp; Python AI</p>
++    </div>
++</footer>
++
++<!-- Bootstrap JS -->
++<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
++
++<style>
++    /* ?? ?덉뼱濡??뱀뀡 ?? */
++    .hero-section {
++        position: relative;
++        overflow: hidden;
++        padding: 5rem 0 4rem;
++    }
++
++    .min-vh-hero { min-height: calc(100vh - 4rem); }
++
++    .hero-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
++
++    .hero-blob {
++        position: absolute;
++        border-radius: 50%;
++        filter: blur(100px);
++    }
++
++    .hero-blob-1 {
++        width: 700px; height: 700px;
++        background: radial-gradient(circle, rgba(255,107,53,0.12), transparent 70%);
++        top: -200px; left: -200px;
++    }
++
++    .hero-blob-2 {
++        width: 600px; height: 600px;
++        background: radial-gradient(circle, rgba(46,196,182,0.1), transparent 70%);
++        bottom: -200px; right: -100px;
++    }
++
++    .hero-grid {
++        position: absolute;
++        inset: 0;
++        background-image:
++            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
++            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
++        background-size: 60px 60px;
++    }
++
++    .hero-badge { margin-bottom: 1.5rem; }
++
++    .hero-title {
++        font-size: clamp(2.5rem, 5vw, 4rem);
++        font-weight: 900;
++        line-height: 1.15;
++        color: #fff;
++        margin-bottom: 1.5rem;
++        letter-spacing: -0.03em;
++    }
++
++    .hero-subtitle {
++        font-size: 1.125rem;
++        color: rgba(255,255,255,0.6);
++        line-height: 1.7;
++        margin-bottom: 2.5rem;
++        max-width: 520px;
++    }
++
++    .hero-cta { margin-bottom: 3rem; display: flex; flex-wrap: wrap; gap: 1rem; }
++
++    .hero-stats {
++        display: flex;
++        align-items: center;
++        gap: 2rem;
++    }
++
++    .stat-item { display: flex; flex-direction: column; }
++    .stat-num { font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1.1; }
++    .stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.45); }
++    .stat-divider { width: 1px; height: 2rem; background: rgba(255,255,255,0.15); }
++
++    /* ?? ?덉뼱濡?鍮꾩＜???? */
++    .hero-visual {
++        position: relative;
++        width: 420px;
++        height: 420px;
++    }
++
++    .hero-emoji-main {
++        position: absolute;
++        top: 50%; left: 50%;
++        transform: translate(-50%, -50%);
++        font-size: 8rem;
++        line-height: 1;
++        filter: drop-shadow(0 0 40px rgba(255,107,53,0.4));
++    }
++
++    .hero-card {
++        position: absolute;
++        display: flex;
++        align-items: center;
++        gap: 0.75rem;
++        background: rgba(30, 41, 59, 0.85);
++        backdrop-filter: blur(16px);
++        border: 1px solid rgba(255,255,255,0.1);
++        border-radius: 1rem;
++        padding: 0.75rem 1.25rem;
++        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
++    }
++
++    .hero-card-icon { font-size: 1.5rem; }
++    .hero-card-title { font-size: 0.8rem; font-weight: 700; color: #fff; }
++    .hero-card-sub { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
++
++    .hero-card-1 { top: 10%; left: -5%; animation: floatCard 4s ease-in-out infinite; }
++    .hero-card-2 { top: 5%; right: 0%; animation: floatCard 5s ease-in-out infinite 1s; }
++    .hero-card-3 { bottom: 10%; left: 5%; animation: floatCard 4.5s ease-in-out infinite 0.5s; }
++
++    @keyframes floatCard {
++        0%, 100% { transform: translateY(0); }
++        50%       { transform: translateY(-8px); }
++    }
++
++    /* ?? ?쇱쿂 ?뱀뀡 ?? */
++    .section-title {
++        font-size: clamp(1.75rem, 3vw, 2.25rem);
++        font-weight: 800;
++        color: #fff;
++        margin-bottom: 0.75rem;
++        letter-spacing: -0.02em;
++    }
++
++    .section-subtitle {
++        color: rgba(255,255,255,0.5);
++        font-size: 1rem;
++    }
++
++    .feature-card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
++    .feature-card-title {
++        font-size: 1.1rem;
++        font-weight: 700;
++        color: #fff;
++        margin-bottom: 0.5rem;
++    }
++    .feature-card-desc {
++        color: rgba(255,255,255,0.55);
++        font-size: 0.9rem;
++        line-height: 1.6;
++        margin: 0;
++    }
++
++    /* ?ㅻ퉬寃뚯씠???ㅽ겕濡??④낵 */
++    #mainNavbar.scrolled {
++        background: rgba(15, 23, 42, 0.98) !important;
++    }
++</style>
++
++<script>
++    window.addEventListener('scroll', () => {
++        document.getElementById('mainNavbar').classList.toggle('scrolled', window.scrollY > 30);
++    });
++</script>
++
++</body>
++</html>

@@ -1,6 +1,6 @@
-spring:
+﻿spring:
   profiles:
-    active: rds # RDS 프로필 활성화
+    active: tidb
 
   thymeleaf:
     cache: false
@@ -29,7 +29,8 @@ server:
 
 logging:
   charset:
-    console: MS949
+    console: UTF-8
+    file: UTF-8
   level:
     com.recipekr: DEBUG
     org.springframework.security: DEBUG

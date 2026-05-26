@@ -52,3 +52,12 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// Windows 환경에서 한글 인코딩 깨짐 방지: JVM 파일 인코딩을 UTF-8로 강제 설정
+tasks.withType(JavaExec).configureEach {
+    jvmArgs '-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8'
+}
+
+bootRun {
+    jvmArgs = ['-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8']
+}

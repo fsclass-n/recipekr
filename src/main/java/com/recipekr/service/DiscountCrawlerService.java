@@ -46,6 +46,11 @@ public class DiscountCrawlerService {
         if (new java.io.File(projectConda).exists()) {
             return projectConda;
         }
+        // local myenv conda environment support
+        String myenvConda = Paths.get(System.getProperty("user.home"), "anaconda3", "envs", "myenv", "python.exe").toString();
+        if (new java.io.File(myenvConda).exists()) {
+            return myenvConda;
+        }
         return "python";
     }
 
@@ -108,11 +113,17 @@ public class DiscountCrawlerService {
             if (rdsUser != null) pb.environment().put("RDS_USERNAME", rdsUser);
             if (rdsPass != null) pb.environment().put("RDS_PASSWORD", rdsPass);
 
-            // 호환성을 위해 RDS 환경 변수가 있고 TiDB 환경 변수가 없는 경우 TiDB 변수에도 RDS 값을 넣어 줍니다.
-            if (rdsUrl != null) {
-                if (pb.environment().get("TIDB_URL") == null) pb.environment().put("TIDB_URL", rdsUrl);
-                if (pb.environment().get("TIDB_USERNAME") == null) pb.environment().put("TIDB_USERNAME", rdsUser);
-                if (pb.environment().get("TIDB_PASSWORD") == null) pb.environment().put("TIDB_PASSWORD", rdsPass);
+            // 로컬(tidb 프로필): RDS_URL 없으면 TIDB_URL 값을 RDS_URL에도 복사하여 Python 크롤러가 인식할 수 있도록
+            if (rdsUrl == null && tidbUrl != null) {
+                pb.environment().put("RDS_URL", tidbUrl);
+                if (tidbUser != null) pb.environment().put("RDS_USERNAME", tidbUser);
+                if (tidbPass != null) pb.environment().put("RDS_PASSWORD", tidbPass);
+            }
+            // 서버(rds 프로필): TIDB_URL 없으면 RDS_URL 값을 TIDB_URL에도 복사
+            if (tidbUrl == null && rdsUrl != null) {
+                pb.environment().put("TIDB_URL", rdsUrl);
+                if (rdsUser != null) pb.environment().put("TIDB_USERNAME", rdsUser);
+                if (rdsPass != null) pb.environment().put("TIDB_PASSWORD", rdsPass);
             }
 
             // 크롤러 스크립트가 있는 디렉토리를 작업 디렉토리로 설정
