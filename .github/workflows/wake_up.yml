@@ -1,0 +1,28 @@
+name: Wake Up Render Services
+
+on:
+  schedule:
+    # 렌더의 슬립 대기 시간(15분)보다 안전하게 짧은 12분 주기로 실행합니다.
+    # [시간대 조절 옵션 선택]
+    
+    # 옵션 A) 단일 계정 750시간 한도 준수용 (한국 시간 오전 9시 ~ 오후 9시 가동, 일 12시간)
+    # UTC 기준 00:00 ~ 11:59에만 동작합니다.
+    - cron: '*/12 0-11 * * *'
+    
+    # 옵션 B) 계정 분리 시 24시간 가동용 (매 12분마다 상시 동작)
+    # - cron: '*/12 * * * *'
+  
+  # 깃허브 웹 UI에서 수동으로 실행해 볼 수 있도록 설정
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Web Services
+        run: |
+          echo "Pinging movie-flow..."
+          curl -sL -w " -> HTTP %{http_code}\n" "https://movie-flow.onrender.com/health" -o /dev/null
+          
+          echo "Pinging recipekr..."
+          curl -sL -w " -> HTTP %{http_code}\n" "https://recipekr-render.onrender.com/" -o /dev/null
