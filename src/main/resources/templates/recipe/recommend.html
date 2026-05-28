@@ -461,20 +461,20 @@
         const progressBar = document.getElementById('crawlProgress');
         const cartIcon = document.getElementById('crawlCart');
         let p = 0;
-        let speed = 0.4; // 약 12.5초에 걸쳐 100% 도달 (0.4 * 20 = 초당 8%)
+        let speed = 0.15; // 이전보다 훨씬 천천히 차오르게 조절 (초당 3%씩 상승)
         let fetchDone = false;
         
         const interval = setInterval(() => {
             if (!fetchDone) {
-                if (p < 85) {
+                if (p < 80) {
                     p += speed;
                 } else if (p < 99) {
-                    // 85% 이후부터는 완전히 멈추지 않고 아주 조금씩(1/10 속도) 증가하여 99%까지만 도달
-                    p += (speed * 0.1);
+                    // 80% 이후부터는 99%까지 극도로 천천히 상승하도록 조절
+                    p += (speed * 0.05);
                 }
             } else {
-                // 완료 시 100%까지 빠르게 가속
-                p += speed;
+                // 완료 시 100%까지 매우 빠르게 채움
+                p += 5.0;
                 if (p >= 100) {
                     p = 100;
                     clearInterval(interval);
@@ -482,7 +482,8 @@
                 }
             }
             progressBar.style.width = p + '%';
-            cartIcon.style.left = p + '%';
+            // 카트 모양이 전체 영역 안에서 항상 안전하게 다 보이도록 보정 (0%일 때 왼쪽 정렬, 100%일 때 오른쪽 정렬)
+            cartIcon.style.left = 'calc(12px + ' + (p / 100) + ' * (100% - 24px))';
         }, 50);
 
         const csrfEl = document.querySelector('input[name="_csrf"]');
@@ -494,11 +495,9 @@
         fetch('/api/crawler/run', { method: 'POST', headers: headers })
             .then(() => {
                 fetchDone = true;
-                speed = 2.5; // 크롤링 완료 시 부드럽게 끝까지 가속
             })
             .catch(() => {
                 fetchDone = true;
-                speed = 2.5;
             });
     }
     const selectedIngredients = new Set();

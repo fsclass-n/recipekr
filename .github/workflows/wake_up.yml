@@ -13,6 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Web Service
+        env:
+          WAKE_UP_URL: ${{ secrets.WAKE_UP_URL }}
         run: |
-          echo "Pinging recipekr..."
-          curl -sL -w " -> HTTP %{http_code}\n" "${{ secrets.RENDER_URL }}" -o /dev/null
+          if [ -z "$WAKE_UP_URL" ]; then
+            echo "⚠️ Warning: WAKE_UP_URL secret is not set. Skipping ping."
+            echo "Please configure WAKE_UP_URL in your GitHub repository secrets."
+            exit 0
+          fi
+          echo "Pinging Web Service..."
+          curl -sL -w " -> HTTP %{http_code}\n" "$WAKE_UP_URL" -o /dev/null
