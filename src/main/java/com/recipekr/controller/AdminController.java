@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.recipekr.repository.DiscountItemRepository;
 import com.recipekr.repository.RecipeRepository;
 import com.recipekr.repository.UserRepository;
+import com.recipekr.domain.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -12,7 +13,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -145,7 +148,30 @@ public class AdminController {
             model.addAttribute("error", "서버 내부 오류가 발생했습니다: " + e.getMessage());
         }
 
+        try {
+            List<User> users = userRepository.findAll();
+            model.addAttribute("users", users);
+        } catch (Exception e) {
+            log.error("Failed to load users for dashboard", e);
+        }
+
         return "admin/dashboard";
+    }
+
+    @PostMapping("/update-role")
+    public String updateRole(Authentication authentication, 
+                             @RequestParam("userId") Long userId, 
+                             @RequestParam("role") String role) {
+        if (authentication == null || !hasAdminRole(authentication)) {
+            return "redirect:/";
+        }
+        try {
+            userRepository.updateRole(userId, role);
+            log.info("Admin updated role of user ID: {} to {}", userId, role);
+        } catch (Exception e) {
+            log.error("Failed to update user role", e);
+        }
+        return "redirect:/admin/dashboard";
     }
 
     private boolean hasAdminRole(Authentication authentication) {

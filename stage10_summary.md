@@ -123,13 +123,17 @@ PW: Admin1234!
 - Python 라이브러리
 - Playwright
 
-### 7. 추천 페이지 헤더 로고 및 활성 메뉴 디자인 개선
-- `recommend.html`의 헤더 로고를 메인 페이지와 동일하게 🍽️ 이모지로 변경했습니다.
-- 선택된 활성 메뉴("레시피 추천") 항목에 둥근 사각형 음영(border-radius: 10px, box-shadow, border)을 추가하여 시각적 일관성을 확보했습니다.
+### 7. 추천 페이지, 마이페이지, 로그인/회원가입 페이지 헤더 로고 및 디자인 개선
+- `recommend.html`, `mypage.html`, `login.html`, `signup.html`, `dashboard.html` (관리자 대시보드) 및 공통 레이아웃인 `base.html` 전체의 헤더 로고를 메인 페이지와 동일하게 🍽️ 이모지로 변경하여 일관성을 확보했습니다.
+- 선택된 활성 메뉴 항목에 둥근 사각형 음영(border-radius: 10px, box-shadow, border)을 추가하여 시각적 통일성을 확보했습니다.
 
 ### 8. Render 서버 한글 로그 깨짐 수정 및 RPA 크롤러 타임아웃 최적화
 - **한글 로그 깨짐**: `Dockerfile`의 JVM 옵션(`JAVA_OPTS`)에 `-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8` 설정을 추가하여 Render(Linux) 환경에서 발생하던 한글 로그 깨짐 현상을 해결했습니다.
 - **RPA 시간 단축**: 각 마트의 크롤러(`emart_crawler.py`, `lottemart_crawler.py`, `homeplus_crawler.py`)가 `PLAYWRIGHT_TIMEOUT` 환경변수(기본값 20000ms, Dockerfile 설정값 25000ms)를 읽도록 수정했습니다. 기존에 35~40초씩 걸리던 페이지 로드 대기 제한이 단축되어, 한 마트가 지연될 때 전체 RPA 속도가 훨씬 빨라지게 개선되었습니다.
+
+### 9. 관리자 대시보드 내 "회원 권한 관리" 기능 추가 및 복원
+- **기능 복원**: 관리자 대시보드(`dashboard.html`) 하단에 총 가입 회원 목록을 보여주는 **회원 권한 관리** 패널을 추가하였습니다.
+- **백엔드 연동**: `UserRepository`에 `findAll()` 및 `updateRole()` 기능을 추가하였고, `AdminController`에서 데이터를 연동하여 각 회원들의 권한(USER, ADMIN)을 드롭다운 선택 후 `✓` 버튼을 통해 실시간으로 즉시 변경할 수 있도록 `POST /admin/update-role` 핸들러를 구현했습니다.
 
 ## 실행 방법
 

@@ -148,4 +148,20 @@ public class UserRepository {
         String sql = "DELETE FROM users WHERE username = ?";
         jdbcTemplate.update(sql, username);
     }
+
+    /**
+     * 전체 사용자 조회
+     */
+    public List<User> findAll() {
+        String sql = "SELECT * FROM users ORDER BY id DESC";
+        return jdbcTemplate.query(sql, userRowMapper);
+    }
+
+    /**
+     * 사용자 권한 업데이트
+     */
+    public void updateRole(Long id, String role) {
+        String sql = "UPDATE users SET role = ?, updated_at = ? WHERE id = ?";
+        jdbcTemplate.update(sql, role, Timestamp.valueOf(LocalDateTime.now()), id);
+    }
 }
