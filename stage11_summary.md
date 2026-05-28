@@ -45,14 +45,13 @@
 
 #### 📄 `.github/workflows/wake_up.yml` 설정 내용
 ```yaml
-name: Wake Up Render Services
+name: Wake Up Render Service
 
 on:
   schedule:
     # 렌더의 슬립 모드(15분 미요청 시 중지)를 예방하기 위해 12분 간격으로 HTTP 호출을 보냅니다.
-    # 아래 설정은 한국 시간 오전 9시 ~ 오후 9시(UTC 00:00 ~ 11:59, 12시간)만 핑을 보내 무료 가동 시간을 아낍니다.
-    # (계정 분리 운영 시에는 '*/12 * * * *' 로 설정해 24시간 항시 구동 가능)
-    - cron: '*/12 0-11 * * *'
+    # 단일 서비스(recipekr)만 가동하므로 24시간 상시 가동(월 720시간 소모)이 무료 범위(750시간) 내에 완전히 들어옵니다.
+    - cron: '*/12 * * * *'
   
   workflow_dispatch: # 필요 시 깃허브 액션 탭에서 수동으로도 트리거 가능
 
@@ -60,13 +59,10 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Web Services
+      - name: Ping Web Service
         run: |
-          echo "Pinging movie-flow..."
-          curl -sL -w " -> HTTP %{http_code}\n" "https://movie-flow.onrender.com/health" -o /dev/null
-          
           echo "Pinging recipekr..."
-          curl -sL -w " -> HTTP %{http_code}\n" "https://recipekr-render.onrender.com/" -o /dev/null
+          curl -sL -w " -> HTTP %{http_code}\n" "https://recipekr.onrender.com/" -o /dev/null
 ```
 
 ---
