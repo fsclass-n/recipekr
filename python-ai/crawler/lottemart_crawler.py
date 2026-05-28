@@ -8,6 +8,7 @@
 - 상품명에서 가격 텍스트 제거, 단위 가격 오파싱 방지
 """
 import logging
+import os
 import re
 from datetime import date
 
@@ -26,7 +27,8 @@ async def crawl_lottemart(page: Page) -> list[dict]:
 
     try:
         logger.info("[롯데마트] 크롤링 시작: %s", LOTTEMART_URL)
-        await page.goto(LOTTEMART_URL, wait_until="domcontentloaded", timeout=35000)
+        pg_timeout = int(os.environ.get("PLAYWRIGHT_TIMEOUT", "20000"))
+        await page.goto(LOTTEMART_URL, wait_until="domcontentloaded", timeout=pg_timeout)
         await page.wait_for_timeout(3000)
 
         # 팝업 닫기

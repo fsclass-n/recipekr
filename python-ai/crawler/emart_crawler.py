@@ -8,6 +8,7 @@
 - 상품명 추출 시 UI 버튼 텍스트 필터링
 """
 import logging
+import os
 import re
 from datetime import date
 
@@ -30,7 +31,8 @@ async def crawl_emart(page: Page) -> list[dict]:
     for url in EMART_URLS:
         logger.info("[이마트] 시도 URL: %s", url)
         try:
-            await page.goto(url, wait_until="domcontentloaded", timeout=35000)
+            pg_timeout = int(os.environ.get("PLAYWRIGHT_TIMEOUT", "20000"))
+            await page.goto(url, wait_until="domcontentloaded", timeout=pg_timeout)
             await page.wait_for_timeout(3000)
 
             # 팝업 닫기

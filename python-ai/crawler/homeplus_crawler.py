@@ -8,6 +8,7 @@
   텍스트 형식: "상품명 / 분류 / ... / 정가원 / N%할인가원 / ..."
 """
 import logging
+import os
 import re
 from datetime import date
 
@@ -34,7 +35,8 @@ async def crawl_homeplus(page: Page) -> list[dict]:
     for url in HOMEPLUS_URLS:
         logger.info("[홈플러스] 시도 URL: %s", url)
         try:
-            await page.goto(url, wait_until="domcontentloaded", timeout=40000)
+            pg_timeout = int(os.environ.get("PLAYWRIGHT_TIMEOUT", "20000"))
+            await page.goto(url, wait_until="domcontentloaded", timeout=pg_timeout)
             await page.wait_for_timeout(3000)
 
             # 팝업 닫기
