@@ -15,4 +15,4 @@ jobs:
       - name: Ping Web Service
         run: |
           echo "Pinging recipekr..."
-          curl -sL -w " -> HTTP %{http_code}\n" "https://recipekr.onrender.com/" -o /dev/null
+          curl -sL -w " -> HTTP %{http_code}\n" "${{ secrets.RENDER_URL }}" -o /dev/null

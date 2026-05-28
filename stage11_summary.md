@@ -62,8 +62,15 @@ jobs:
       - name: Ping Web Service
         run: |
           echo "Pinging recipekr..."
-          curl -sL -w " -> HTTP %{http_code}\n" "https://recipekr.onrender.com/" -o /dev/null
+          curl -sL -w " -> HTTP %{http_code}\n" "${{ secrets.RENDER_URL }}" -o /dev/null
 ```
+
+> 🔒 **보안을 위한 GitHub Secrets 권장**:
+> 깃허브 레포지토리가 공개(Public) 상태인 경우, 렌더 서비스 주소를 누구나 볼 수 있는 YAML 파일에 직접 노출하지 않는 것이 보안상 좋습니다. 따라서 아래 방법으로 깃허브 시크릿을 등록한 뒤 사용하시는 것을 강력히 권장합니다.
+> 1. 해당 깃허브 저장소(Repository) -> **Settings** -> **Secrets and variables** -> **Actions** 메뉴로 이동합니다.
+> 2. **New repository secret** 버튼을 클릭합니다.
+> 3. Name에 `RENDER_URL`을 입력하고, Value에 실제 렌더 주소(예: `https://recipekr.onrender.com/`)를 입력한 뒤 **Add secret**을 누릅니다.
+
 
 ---
 
