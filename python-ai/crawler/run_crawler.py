@@ -57,10 +57,10 @@ def get_db_config() -> dict:
     from dotenv import load_dotenv
     load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
     
-    # 기본적으로 RDS_URL을 우선 읽어오고 없으면 예외 처리 또는 로컬호스트
-    db_url = os.environ.get("RDS_URL", os.environ.get("TIDB_URL", ""))
+    # 기본적으로 TIDB_URL을 우선 읽어오고 없으면 RDS_URL 또는 로컬호스트
+    db_url = os.environ.get("TIDB_URL", os.environ.get("RDS_URL", ""))
     
-    host, port, database = "localhost", 3306, "recipekrrds"
+    host, port, database = "localhost", 4000, "recipekr"
     if db_url:
         m = re.search(r"(?:jdbc:)?mysql://([^:/]+):?(\d+)?/([^?]+)", db_url)
         if m:
@@ -81,8 +81,8 @@ def get_db_config() -> dict:
         "host": host,
         "port": port,
         "database": database,
-        "user": os.environ.get("RDS_USERNAME", os.environ.get("TIDB_USERNAME", "root")),
-        "password": os.environ.get("RDS_PASSWORD", os.environ.get("TIDB_PASSWORD", "")),
+        "user": os.environ.get("TIDB_USERNAME", os.environ.get("RDS_USERNAME", "root")),
+        "password": os.environ.get("TIDB_PASSWORD", os.environ.get("RDS_PASSWORD", "")),
         "ssl_disabled": ssl_disabled,
         "charset": "utf8mb4",
         "use_pure": True,
