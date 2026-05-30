@@ -1,0 +1,31 @@
+name: Keep Repository Active
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # 매주 일요일 자정(00:00)에 실행하여 60일 비활성화 타이머 초기화
+  workflow_dispatch:      # 필요 시 깃허브 액션 탭에서 수동 실행 가능
+
+permissions:
+  contents: write
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Update Activity Timestamp
+        run: |
+          echo "Last active: $(date)" > keep_alive.txt
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add keep_alive.txt
+          # [skip ci] 태그를 추가하여 이 활동성 커밋이 운영 배포(deploy.yml)를 유발하지 않도록 방지합니다.
+          git commit -m "chore: keep repository active [skip ci]" || echo "No changes to commit"
+          git push origin main
